@@ -1,5 +1,11 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+Always consider the following documents as the source of truth:
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+- docs/architecture.md
+- docs/database.md
+- docs/roadmap.md
+
+If a requested implementation conflicts with those documents, update the documentation first or ask for clarification before implementing the code.
+
+Never duplicate business logic.
+
+Keep documentation up to date whenever architecture or database changes.
