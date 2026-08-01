@@ -1,21 +1,43 @@
 ---
-description: Generate and execute a Conventional Commit for staged changes
+description: Agrega todos los cambios, genera y ejecuta un Conventional Commit
 ---
 
-Analyze the staged git changes (`git diff --cached`).
+Agrega todos los cambios del working tree:
 
-Generate a single Conventional Commit message.
+```sh
+git add .
+```
 
-Rules:
+Analiza los cambios preparados para el commit:
 
-- Use Conventional Commits.
-- Prefer concise messages.
-- Use English.
-- Use the imperative mood.
-- Do not include a body unless explicitly requested.
-- Do not explain the result.
+```sh
+git diff --cached
+```
 
-Available types:
+Genera un único mensaje de Conventional Commit que represente de la mejor manera el propósito general de los cambios.
+
+Reglas:
+
+- Usa Conventional Commits.
+- Escribe el mensaje en inglés.
+- Usa el modo imperativo.
+- Prefiere mensajes concisos pero informativos.
+- El asunto debe reflejar el objetivo principal de los cambios, no solo los archivos o modificaciones más evidentes.
+- Analiza el alcance completo de los cambios preparados, no solo los nombres de los archivos.
+- Si el commit incluye configuración inicial, infraestructura, configuración del proyecto o herramientas, refléjalo en el mensaje.
+- Evita mensajes demasiado genéricos como "update files", "add screens" o "fix stuff".
+- Si varios cambios forman parte de una misma funcionalidad, resúmelos en un único mensaje significativo.
+- Si los cambios introducen un nuevo módulo, framework, sistema de diseño o la base de una funcionalidad, prioriza verbos como:
+  - bootstrap
+  - initialize
+  - set up
+  - scaffold
+    en lugar de simplemente "add".
+- No incluyas un cuerpo en el commit salvo que los cambios abarquen múltiples aspectos o una configuración importante del proyecto.
+- Si incluyes un cuerpo, que sea breve (2–5 viñetas) resumiendo los cambios principales.
+- No expliques el mensaje generado.
+
+Tipos disponibles:
 
 - feat
 - fix
@@ -28,7 +50,7 @@ Available types:
 - ci
 - perf
 
-Preferred scopes:
+Scopes preferidos:
 
 - auth
 - products
@@ -44,17 +66,24 @@ Preferred scopes:
 - pwa
 - docs
 
-After generating the commit message:
+Después de generar el mensaje:
 
-1. Execute:
+1. Ejecuta:
+
    ```sh
    git commit -m "<generated_commit_message>"
    ```
-2. If the commit succeeds, return only the output from `git commit`.
-3. If there are no staged changes, return:
+
+2. Si el commit se realiza correctamente, devuelve únicamente la salida de `git commit`.
+
+3. Si no hay cambios para commitear, devuelve:
+
    ```
-   No staged changes to commit.
+   No changes to commit.
    ```
-4. If the commit fails, return only the error output from Git.
-5. Do not ask for confirmation before executing the commit.
-6. Do not print the commit message by itself unless the commit fails before execution.
+
+4. Si el commit falla, devuelve únicamente el error producido por Git.
+
+5. No solicites confirmación antes de ejecutar los comandos.
+
+6. No muestres el mensaje de commit por separado, salvo que el commit falle antes de ejecutarse.
