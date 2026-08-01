@@ -1,13 +1,19 @@
-# Commit
+---
+description: Generate a Conventional Commit message for staged changes
+---
 
-Generate a git commit message following the Conventional Commits specification.
+Analyze the staged git changes (`git diff --cached`).
+
+Generate a single Conventional Commit message.
 
 Rules:
 
-- Use concise and descriptive messages.
-- Do not mention implementation details unless they provide meaningful context.
-- Prefer English.
+- Use Conventional Commits.
+- Prefer concise messages.
+- Use English.
 - Use the imperative mood.
+- Do not include a body unless explicitly requested.
+- Do not explain the result.
 
 Available types:
 
@@ -22,19 +28,20 @@ Available types:
 - ci
 - perf
 
-When generating the commit:
+Preferred scopes:
 
-1. Analyze all staged changes.
-2. Determine the most appropriate Conventional Commit type.
-3. Generate only the commit message.
-4. Do not include explanations unless explicitly requested.
+- auth
+- products
+- categories
+- brands
+- units
+- templates
+- daily-log
+- dashboard
+- sync
+- database
+- ui
+- pwa
+- docs
 
-Examples:
-
-feat(products): add product creation
-
-fix(sync): prevent duplicated daily logs
-
-docs(database): update product model
-
-refactor(ui): simplify dashboard layout
+Return only the commit message.
