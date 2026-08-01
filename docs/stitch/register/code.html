@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NutriLog - Criar Conta</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#a4f1b2",
+                      "primary-container": "#22c55e",
+                      "outline": "#6d7b6c",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed": "#a6f4b5",
+                      "secondary": "#1f6c3a",
+                      "primary": "#006e2f",
+                      "tertiary-fixed": "#ffddb8",
+                      "on-tertiary-container": "#5c3800",
+                      "primary-fixed-dim": "#4ae176",
+                      "on-tertiary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "tertiary-container": "#ef9900",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-secondary-fixed": "#00210b",
+                      "on-primary-fixed": "#002109",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-variant": "#d3e4fe",
+                      "on-primary-container": "#004b1e",
+                      "surface": "#f8f9ff",
+                      "on-primary-fixed-variant": "#005321",
+                      "background": "#f8f9ff",
+                      "surface-bright": "#f8f9ff",
+                      "inverse-primary": "#4ae176",
+                      "on-tertiary-fixed": "#2a1700",
+                      "on-error": "#ffffff",
+                      "surface-tint": "#006e2f",
+                      "inverse-on-surface": "#eaf1ff",
+                      "on-secondary-fixed-variant": "#005226",
+                      "on-secondary-container": "#24703e",
+                      "surface-container-high": "#dce9ff",
+                      "on-surface": "#0b1c30",
+                      "inverse-surface": "#213145",
+                      "secondary-fixed-dim": "#8bd79b",
+                      "outline-variant": "#bccbb9",
+                      "on-background": "#0b1c30",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-fixed": "#6bff8f",
+                      "on-surface-variant": "#3d4a3d",
+                      "surface-container": "#e5eeff",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#cbdbf5",
+                      "tertiary": "#855300",
+                      "surface-container-low": "#eff4ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "24px",
+                      "list-item-gap": "8px",
+                      "base": "4px",
+                      "gutter": "12px",
+                      "margin-mobile": "16px",
+                      "touch-target-min": "48px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "numeric-data": ["Inter"],
+                      "body-sm-dense": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "title-md": ["Inter"],
+                      "label-caps": ["Inter"],
+                      "display-protein": ["Inter"]
+              },
+              "fontSize": {
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "numeric-data": ["16px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "body-sm-dense": ["14px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "display-protein": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .form-input-focus:focus {
+            outline: none;
+            border-color: #006e2f;
+            box-shadow: 0 0 0 2px rgba(0, 110, 47, 0.1);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-center items-center bg-surface p-margin-mobile md:p-margin-desktop overflow-x-hidden">
+<!-- Top Branding Anchor (Disconnected from Shell as per Transactional Rule) -->
+<header class="mb-8 text-center">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-primary font-bold tracking-tight">NutriLog</h1>
+<p class="font-body-sm-dense text-on-surface-variant mt-2 max-w-xs mx-auto">
+            Precisão clínica no monitoramento de performance nutricional.
+        </p>
+</header>
+<main class="w-full max-w-[480px]">
+<!-- Registration Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-8 glass-effect">
+<h2 class="font-title-md text-on-surface mb-1">Criar Conta</h2>
+<p class="font-body-sm-dense text-on-surface-variant mb-8">Comece sua jornada de alta densidade proteica hoje.</p>
+<form action="#" class="space-y-5">
+<!-- Full Name Field -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-on-surface-variant" for="full-name">Nome Completo</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">person</span>
+<input class="w-full h-touch-target-min pl-10 pr-4 bg-surface border border-outline-variant rounded-lg font-body-lg text-on-surface form-input-focus transition-all" id="full-name" placeholder="Ex: João Silva" required="" type="text"/>
+</div>
+</div>
+<!-- Email Field -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-on-surface-variant" for="email">E-mail Corporativo ou Pessoal</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">mail</span>
+<input class="w-full h-touch-target-min pl-10 pr-4 bg-surface border border-outline-variant rounded-lg font-body-lg text-on-surface form-input-focus transition-all" id="email" placeholder="nome@exemplo.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-on-surface-variant" for="password">Senha</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">lock</span>
+<input class="w-full h-touch-target-min pl-10 pr-4 bg-surface border border-outline-variant rounded-lg font-body-lg text-on-surface form-input-focus transition-all" id="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Confirm Password Field -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-caps text-on-surface-variant" for="confirm-password">Confirmar Senha</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">lock_reset</span>
+<input class="w-full h-touch-target-min pl-10 pr-4 bg-surface border border-outline-variant rounded-lg font-body-lg text-on-surface form-input-focus transition-all" id="confirm-password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Protein Focus Note -->
+<div class="flex items-start gap-3 p-3 bg-secondary-container/20 border border-secondary-container/40 rounded-lg">
+<span class="material-symbols-outlined text-secondary text-[20px]">info</span>
+<p class="font-body-sm-dense text-on-secondary-container">
+<strong>Nota de Sistema:</strong> Ao se registrar, você concorda em priorizar a ingestão proteica como métrica mestre de sua saúde metabólica.
+                    </p>
+</div>
+<!-- Submit Button -->
+<button class="w-full h-touch-target-min bg-primary text-on-primary font-title-md rounded-lg flex items-center justify-center gap-2 hover:bg-on-primary-fixed-variant active:scale-95 transition-all shadow-sm" type="submit">
+                    Criar Conta
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</form>
+<div class="relative my-8">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<div class="relative flex justify-center text-label-caps uppercase">
+<span class="bg-surface-container-lowest px-4 text-on-surface-variant font-label-caps">ou</span>
+</div>
+</div>
+<!-- Google Sign Up -->
+<button class="w-full h-touch-target-min border border-outline-variant rounded-lg flex items-center justify-center gap-3 font-body-lg text-on-surface hover:bg-surface-container transition-colors active:scale-95">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcR57kYI9iODB0QJs_p9OWQRmO0o_TuTi81y6jHP51QWwuey-7o4qThByiWKJRnhjnafn3ETjXdxfT8tgYeFjuomSde9Dqim5bANsxPkOQNc2Df6uVgdkQAbukwnOmk19MWtz8uMh8VBS7IGsx1oMyiFhdPbJNI-Da93BoC76VOLCEqaZlEq2U1tKEd-3E4npMemyabsCG3jEYtbgDjlOTgkBWdNwWNZtp_3ilUM3lzbb6TJY5GhDLqQ"/>
+                Cadastrar com Google
+            </button>
+<!-- Footer Link -->
+<div class="mt-8 text-center">
+<p class="font-body-sm-dense text-on-surface-variant">
+                    Já tem uma conta? 
+                    <a class="text-primary font-bold hover:underline" href="#">Entre</a>
+</p>
+</div>
+</div>
+<!-- Decorative Illustration/Atmospheric Element (Floating Pills/Metrics) -->
+<div class="mt-12 grid grid-cols-3 gap-gutter opacity-40 pointer-events-none select-none">
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-[20px]">fitness_center</span>
+</div>
+<div class="h-1 w-12 bg-outline-variant rounded-full"></div>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-container text-[20px]">monitoring</span>
+</div>
+<div class="h-1 w-12 bg-outline-variant rounded-full"></div>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container text-[20px]">nutrition</span>
+</div>
+<div class="h-1 w-12 bg-outline-variant rounded-full"></div>
+</div>
+</div>
+</main>
+<!-- Background Pattern -->
+<div aria-hidden="true" class="fixed inset-0 -z-10 pointer-events-none opacity-[0.03]">
+<svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="40" id="grid" patternunits="userSpaceOnUse" width="40">
+<path class="text-primary" d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="1"></path>
+</pattern>
+</defs>
+<rect fill="url(#grid)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<script>
+        // Simple form interaction
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">refresh</span> Processando...`;
+            
+            setTimeout(() => {
+                btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Conta Criada!`;
+                btn.classList.replace('bg-primary', 'bg-secondary');
+            }, 1500);
+        });
+
+        // Focus handling for accessibility
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('.material-symbols-outlined').classList.replace('text-outline', 'text-primary');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('.material-symbols-outlined').classList.replace('text-primary', 'text-outline');
+            });
+        });
+    </script>
+</body></html>
