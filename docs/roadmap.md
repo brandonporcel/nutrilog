@@ -29,19 +29,20 @@ El usuario debe poder:
 
 Estado
 
-✅ En progreso
+✅ Completado (pendiente: Configurar Dexie)
 
 Objetivos
 
-- Configurar Next.js
-- Configurar TypeScript
-- Configurar Tailwind CSS
+- Configurar Next.js ✅
+- Configurar TypeScript ✅
+- Configurar Tailwind CSS ✅
 - Configurar PWA ✅
-- Configurar shadcn/ui
-- Configurar Dexie
-- Definir arquitectura
-- Diseñar base de datos
-- Documentar el proyecto
+- Configurar shadcn/ui ✅
+- Configurar autenticación (Supabase Auth) ✅
+- Configurar Dexie ✅
+- Definir arquitectura ✅
+- Diseñar base de datos ✅
+- Documentar el proyecto ✅
 
 ---
 
