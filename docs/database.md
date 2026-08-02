@@ -25,6 +25,7 @@ El objetivo es soportar el MVP sin limitar futuras funcionalidades como:
 - Todas las fechas almacenadas en UTC.
 - Todas las entidades poseen created_at y updated_at.
 - Soft Delete únicamente en entidades sincronizables.
+- Sincronización inicial: last-write-wins basada en updated_at (Epic 5).
 
 ---
 
@@ -35,6 +36,8 @@ La autenticación es gestionada por Supabase Auth.
 Todas las entidades pertenecen a un usuario mediante user_id.
 
 No existe un sistema propio de autenticación.
+
+Todas las tablas aplican RLS con políticas por user_id (se implementa junto con el Epic 1).
 
 ---
 
@@ -127,53 +130,40 @@ Campos principales:
 - sugars
 - sodium
 
----
-
-## serving_amount
+### serving_amount
 
 Cantidad utilizada por la etiqueta nutricional.
 
 Ejemplos:
 
-1
+- 1
+- 2
+- 100
+- 200
 
-2
-
-100
-
-200
-
----
-
-## serving_unit
+### serving_unit_id
 
 Unidad correspondiente a serving_amount.
 
 Ejemplos:
 
-Unit
+- Unit
+- Gram
+- Milliliter
+- Slice
+- Scoop
+- Tablespoon
+- Teaspoon
 
-Gram
-
-Milliliter
-
-Slice
-
-Scoop
-
----
-
-## serving_weight_grams
+### serving_weight_grams
 
 Peso real de la porción expresado en gramos.
 
 Ejemplos:
 
-1 huevo = 60 g
-
-2 slices = 50 g
-
-1 scoop = 35 g
+- 1 huevo = 60 g
+- 2 slices = 50 g
+- 1 scoop = 35 g
 
 Este campo permitirá realizar conversiones automáticas entre unidades y gramos en futuras versiones.
 
@@ -215,6 +205,8 @@ Representa un día de consumo.
 
 Existe un único registro por día y por usuario.
 
+Constraint único: (user_id, date).
+
 Ejemplo:
 
 2026-08-01
@@ -230,6 +222,10 @@ Cada registro almacena:
 - producto
 - cantidad consumida
 - snapshot nutricional
+
+Los snapshots solo existen en Daily Log Items.
+
+Los Template Items no los usan: las plantillas deben reflejar el producto actual.
 
 ---
 

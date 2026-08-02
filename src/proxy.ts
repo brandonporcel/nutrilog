@@ -18,7 +18,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protected routes require a session.
-  if (!user && pathname === "/dashboard") {
+  const protectedPaths = ["/dashboard", "/units"];
+  if (!user && protectedPaths.includes(pathname)) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
