@@ -1,5 +1,5 @@
 ---
-description: Agrega todos los cambios, genera y ejecuta un Conventional Commit
+description: Agrega y analiza los cambios, genera y ejecuta un Conventional Commit
 ---
 
 Agrega todos los cambios del working tree:
