@@ -75,7 +75,7 @@ Backend
 
 # Flujo de datos
 
-El flujo esperado será:
+Estado: implementado para el catálogo Units (SDD 03); las demás entidades siguen el mismo flujo desde el Epic 1.
 
 Usuario
 
@@ -85,17 +85,41 @@ UI
 
 ↓
 
-Persistencia local (IndexedDB)
+Repositorios (capa de datos)
 
 ↓
 
-Sincronización
+Persistencia local (IndexedDB + Dexie)
+
+↓
+
+Sincronización (Epic 5)
 
 ↓
 
 Supabase
 
 La aplicación nunca debería depender de la conexión para registrar información.
+
+---
+
+# Capa de datos
+
+La lógica de negocio vive en una capa de repositorios entre la UI y el almacenamiento (decisión: offline-first).
+
+- La UI **nunca** accede directamente a IndexedDB/Dexie ni a Supabase.
+- Los repositorios escriben primero en la base local (Dexie) y encolan la sincronización (Epic 5).
+- La sincronización nunca bloquea la interacción del usuario.
+- Esto evita duplicar lógica de negocio entre cliente y servidor: se escribe una sola vez, contra la capa local.
+
+Implementado (SDD 03):
+
+- `src/lib/db/database.ts`: esquema Dexie v1 con todas las entidades sincronizables (snake_case, mismas que el esquema remoto → sin capa de mapeo).
+- `src/lib/repositories/units.ts`: patrón de repositorio (`getAll`/`save`/`softDelete` + seeds); el Epic 1 extiende el patrón al resto de las entidades.
+- `src/lib/sync/sync.ts`: sync por timestamps (changes-since) — push de filas con `updated_at > lastSyncedAt` y pull con merge last-write-wins; `meta` guarda `lastSyncedAt` por entidad.
+- Disparadores de sync: carga de la app, evento `online`, retorno a la app y tras escrituras (debounced) — `src/lib/sync/`.
+- Sesión offline: `createBrowserClient` persiste la sesión en localStorage; `OfflineAuthGuard` respalda las rutas protegidas sin conexión.
+- Esquema remoto: `supabase/migrations/0001_initial.sql` (tablas MVP + RLS por `user_id`).
 
 ---
 
@@ -109,6 +133,22 @@ La autenticación es gestionada por Supabase Auth (email + contraseña).
   - Usuario autenticado en `/login` o `/register` → redirect a `/dashboard`.
   - Usuario no autenticado en rutas protegidas (ej. `/dashboard`) → redirect a `/login`.
 - Las rutas protegidas verifican el usuario nuevamente en el Server Component como defensa adicional.
+
+Sesión offline (pendiente, Epic 5):
+
+- Para el modo offline la sesión también se persiste en el cliente (localStorage) y las rutas protegidas verifican el usuario en el cliente como respaldo.
+- Mientras tanto, la validación de sesión es únicamente SSR.
+
+---
+
+# Sincronización
+
+Objetivo (Epic 5):
+
+- Cola de cambios (outbox) con reintento e idempotencia.
+- Detección de cambios mediante `updated_at`.
+- Resolución de conflictos inicial: last-write-wins.
+- Borrado mediante `deleted_at` (ver Convenciones).
 
 ---
 
