@@ -17,15 +17,20 @@ create table if not exists public.units (
   deleted_at timestamptz
 );
 
--- Categories (catalog)
+-- Categories (catalog). icon: lucide icon name rendered by the UI for the
+-- product avatar; the app maps the name to the component (fallback: package).
 create table if not exists public.categories (
   id uuid primary key,
   user_id uuid not null references auth.users (id) on delete cascade,
   name text not null,
+  icon text not null default 'package',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz
 );
+
+-- Covers installs that ran an earlier version of this file (idempotent re-run).
+alter table public.categories add column if not exists icon text not null default 'package';
 
 -- Brands (catalog)
 create table if not exists public.brands (
@@ -111,6 +116,8 @@ create table if not exists public.daily_log_items (
 );
 
 -- Row Level Security: every table is scoped to its owner.
+-- The DO block is idempotent (drop policy if exists) so this file can be
+-- re-run safely after each SDD during development.
 do $$
 declare
   t text;
@@ -118,17 +125,22 @@ begin
   foreach t in array array['units', 'categories', 'brands', 'products', 'templates', 'template_items', 'daily_logs', 'daily_log_items']
   loop
     execute format('alter table public.%I enable row level security;', t);
-    execute format(
-      'create policy "owner select %I" on public.%I for select using (auth.uid() = user_id);', t, t
-    );
-    execute format(
-      'create policy "owner insert %I" on public.%I for insert with check (auth.uid() = user_id);', t, t
-    );
-    execute format(
-      'create policy "owner update %I" on public.%I for update using (auth.uid() = user_id);', t, t
-    );
-    execute format(
-      'create policy "owner delete %I" on public.%I for delete using (auth.uid() = user_id);', t, t
-    );
+    execute format('drop policy if exists "owner select %I" on public.%I;', t, t);
+    execute format('create policy "owner select %I" on public.%I for select using (auth.uid() = user_id);', t, t);
+    execute format('drop policy if exists "owner insert %I" on public.%I;', t, t);
+    execute format('create policy "owner insert %I" on public.%I for insert with check (auth.uid() = user_id);', t, t);
+    execute format('drop policy if exists "owner update %I" on public.%I;', t, t);
+    execute format('create policy "owner update %I" on public.%I for update using (auth.uid() = user_id);', t, t);
+    execute format('drop policy if exists "owner delete %I" on public.%I;', t, t);
+    execute format('create policy "owner delete %I" on public.%I for delete using (auth.uid() = user_id);', t, t);
   end loop;
 end $$;
+
+-- Grants: the SQL editor runs as postgres, and without explicit grants the
+-- anon/authenticated roles cannot touch ANY table even with RLS enabled
+-- ("permission denied for table ..."). RLS keeps every row scoped to its
+-- owner (auth.uid() = user_id), so a blanket grant is safe.
+grant usage on schema public to anon, authenticated;
+grant all on all tables in schema public to anon, authenticated;
+grant all on all sequences in schema public to anon, authenticated;
+grant all on all functions in schema public to anon, authenticated;

@@ -50,7 +50,7 @@ Objetivos
 
 Estado
 
-🚧 En progreso (crear, listar y ver detalle de productos con navegación, SDD 04 y 05 ✅; pendiente: editar/eliminar producto, CRUD completo de categorías, marcas y unidades)
+🚧 En progreso (crear, listar, ver detalle, **editar y eliminar** productos con swipe, SDD 04/05/06 ✅; pendiente: CRUD completo de categorías, marcas y unidades, indicadores nutricionales)
 
 Objetivos
 

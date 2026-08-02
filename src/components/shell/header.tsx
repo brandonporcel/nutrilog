@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Menu, Ruler, UserRound } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { SyncStatusIndicator } from "@/components/shell/sync-status-indicator";
 import {
   Sheet,
   SheetContent,
@@ -73,6 +74,8 @@ export function AppHeader({ title, backHref }: { title: string; backHref?: strin
             {title}
           </h1>
         </div>
+
+        <SyncStatusIndicator />
       </div>
     </header>
   );

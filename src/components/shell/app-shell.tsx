@@ -16,17 +16,28 @@ const SCREENS: Record<string, { title: string; fab?: string; back?: string }> = 
   "/units": { title: "Unidades" },
 };
 
+interface ScreenConfig {
+  title: string;
+  fab?: string;
+  back?: string;
+}
+
+/** Resolves static routes plus dynamic /products/[id] and /products/[id]/edit. */
+function getScreen(pathname: string): ScreenConfig | undefined {
+  const edit = pathname.match(/^\/products\/([^/]+)\/edit$/);
+  if (edit) return { title: "Editar", back: `/products/${edit[1]}` };
+  const detail = pathname.match(/^\/products\/([^/]+)$/);
+  if (detail) return { title: "Detalle", back: "/products" };
+  return SCREENS[pathname];
+}
+
 /**
  * Shell for authenticated screens (SDD 04): fixed header, contextual FAB
  * and bottom nav. Pages under src/app/(app)/ inherit it from the layout.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const screen =
-    SCREENS[pathname] ??
-    (pathname.startsWith("/products/") && pathname !== "/products/new"
-      ? { title: "Detalle", back: "/products" }
-      : undefined);
+  const screen = getScreen(pathname);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

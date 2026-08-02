@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { ToastHost } from "@/components/ui/toast-host";
 import { SyncTriggers } from "@/lib/sync/sync-triggers";
 import "./globals.css";
 
@@ -49,6 +50,7 @@ export default function RootLayout({
         {children}
         <ServiceWorkerRegister />
         <SyncTriggers />
+        <ToastHost />
       </body>
     </html>
   );

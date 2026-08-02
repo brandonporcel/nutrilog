@@ -1,9 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PackageSearch, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { SwipeableRow } from "@/components/products/swipeable-row";
+import { CategoryIcon } from "@/lib/icons/category-icon";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { type Category } from "@/lib/db/database";
 import { categoriesRepository } from "@/lib/repositories/categories";
@@ -13,6 +26,7 @@ import {
 } from "@/lib/repositories/products";
 import { unitsRepository } from "@/lib/repositories/units";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "@/lib/ui/toast-store";
 
 function servingCaption(item: ProductListItem): string {
   const parts = [item.serving_amount, item.serving_unit_name].filter(Boolean);
@@ -21,6 +35,7 @@ function servingCaption(item: ProductListItem): string {
 }
 
 export default function ProductsPage() {
+  const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -28,6 +43,8 @@ export default function ProductsPage() {
 
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
 
   useEffect(() => {
     createClient()
@@ -57,6 +74,13 @@ export default function ProductsPage() {
     ]).then(refresh);
   }, [userId, refresh]);
 
+  // Scrolling closes any open row (Material behavior for swipe actions).
+  useEffect(() => {
+    const closeRow = () => setOpenRowId(null);
+    window.addEventListener("scroll", closeRow, { passive: true });
+    return () => window.removeEventListener("scroll", closeRow);
+  }, []);
+
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     return products.filter((product) => {
@@ -69,6 +93,16 @@ export default function ProductsPage() {
 
   const noProductsYet = !loading && products.length === 0;
   const noResults = !loading && products.length > 0 && filtered.length === 0;
+
+  async function handleDelete() {
+    if (!userId || !deleteTarget) return;
+    await productsRepository.softDelete(userId, deleteTarget.id);
+    setProducts((current) =>
+      current.filter((product) => product.id !== deleteTarget.id)
+    );
+    setDeleteTarget(null);
+    toast("Producto eliminado");
+  }
 
   return (
     <div className="flex flex-col">
@@ -154,38 +188,74 @@ export default function ProductsPage() {
 
       {/* List */}
       {!loading && filtered.length > 0 && (
-        <div className="flex flex-col divide-y divide-outline-variant">
+        <div
+          className="flex flex-col divide-y divide-outline-variant"
+          onClick={() => setOpenRowId(null)}
+        >
           {filtered.map((product) => (
-            <Link
+            <SwipeableRow
               key={product.id}
-              href={`/products/${product.id}`}
-              className="flex items-center px-margin-mobile py-3 transition-colors active:bg-surface-container"
+              open={openRowId === product.id}
+              onOpenChange={(open) =>
+                setOpenRowId((current) => (open ? product.id : current === product.id ? null : current))
+              }
+              onEdit={() => router.push(`/products/${product.id}/edit`)}
+              onDelete={() => setDeleteTarget(product)}
             >
-              <div className="mr-4 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
-                <span className="text-title-md font-bold">
-                  {product.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div className="min-w-0 flex-grow">
-                <h3 className="truncate text-body-lg font-semibold text-on-surface">
-                  {product.name}
-                </h3>
-                <p className="truncate text-body-sm-dense text-on-surface-variant">
-                  {product.brand_name ?? "Sin marca"}
-                </p>
-              </div>
-              <div className="ml-4 flex-shrink-0 text-right">
-                <span className="text-numeric-data text-primary">
-                  {product.protein} g
-                </span>
-                <p className="text-[10px] font-bold uppercase tracking-tight text-on-surface-variant">
-                  {servingCaption(product)}
-                </p>
-              </div>
-            </Link>
+              <Link
+                href={`/products/${product.id}`}
+                className="flex items-center px-margin-mobile py-3 transition-colors active:bg-surface-container"
+              >
+                <div className="mr-4 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
+                  <CategoryIcon
+                    icon={product.category_icon}
+                    className="size-5"
+                  />
+                </div>
+                <div className="min-w-0 flex-grow">
+                  <h3 className="truncate text-body-lg font-semibold text-on-surface">
+                    {product.name}
+                  </h3>
+                  <p className="truncate text-body-sm-dense text-on-surface-variant">
+                    {product.brand_name ?? "Sin marca"}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0 text-right">
+                  <span className="text-numeric-data text-primary">
+                    {product.protein} g
+                  </span>
+                  <p className="text-[10px] font-bold uppercase tracking-tight text-on-surface-variant">
+                    {servingCaption(product)}
+                  </p>
+                </div>
+              </Link>
+            </SwipeableRow>
           ))}
         </div>
       )}
+
+      {/* Delete confirmation */}
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              “{deleteTarget?.name}” se quita de tu lista de productos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -112,14 +112,18 @@ La lógica de negocio vive en una capa de repositorios entre la UI y el almacena
 - La sincronización nunca bloquea la interacción del usuario.
 - Esto evita duplicar lógica de negocio entre cliente y servidor: se escribe una sola vez, contra la capa local.
 
-Implementado (SDD 03 y SDD 04):
+Implementado (SDD 03 a SDD 06):
 
 - `src/lib/db/database.ts`: esquema Dexie v1 con todas las entidades sincronizables (snake_case, mismas que el esquema remoto → sin capa de mapeo).
-- Repositorios: `src/lib/repositories/units.ts` (patrón base), `products.ts` (`getListItems` resuelve marca y unidad de porción), `categories.ts` (+ seeds) y `brands.ts` (`getOrCreateByName`); el Epic 1 extiende el patrón al resto de las entidades.
-- `src/lib/sync/sync.ts`: sync por timestamps (changes-since) — push de filas con `updated_at > lastSyncedAt` y pull con merge last-write-wins; `meta` guarda `lastSyncedAt` por entidad. Hoy sincroniza `units`, `products`, `categories` y `brands`.
-- Disparadores de sync: carga de la app, evento `online`, retorno a la app y tras escrituras (debounced) — `src/lib/sync/`.
+- Repositorios: `src/lib/repositories/units.ts` (patrón base), `products.ts` (`getListItems`/`getDetail` resuelven marca, categoría (incluye su `icon`) y unidad; `save`/`update`/`softDelete`), `categories.ts` (+ seeds con `icon`) y `brands.ts` (`getOrCreateByName`); el Epic 1 extiende el patrón al resto de las entidades.
+- Avatar del producto: el ícono es **dato de la categoría** (`categories.icon`, nombre de lucide) que viaja con el sync y se renderiza con `src/lib/icons/category-icon.tsx` (`CategoryIcon`, fallback `package`; sin categoría → `UtensilsCrossed`).
+- `src/lib/sync/sync.ts`: sync por timestamps (changes-since) — push de filas con `updated_at > lastSyncedAt` y pull con merge last-write-wins; `meta` guarda `lastSyncedAt` por entidad. Hoy sincroniza `units`, `categories`, `brands` y `products` **en ese orden** (dependencias FK: los productos referencian marcas, categorías y unidades, así el push nunca viola foreign keys en la primera pasada). **Auto-reparación**: si un push falla con violación de foreign key (la remota perdió filas, p.ej. un dev reset borró tablas mientras el watermark local sobrevivió — el sync changes-since nunca vuelve a subir filas viejas), se limpian todos los watermarks y corre una segunda pasada que re-subió todo (idempotente). Los errores de push/pull se loguean con `console.error` — un sync silencioso es un sync roto.
+- Disparadores de sync: carga de la app, evento `online`, retorno a la app, tras escrituras (debounced) y **retry periódico cada 60 s** (solo con la pestaña visible y online) para converger sin acción del usuario — `src/lib/sync/`.
+- Estado de sync visible: `src/lib/sync/sync-status.ts` (pub-sub) alimenta el chip del header (`SyncStatusIndicator`: sincronizando / sin conexión / error) y un toast de error solo cuando el sync falla estando online (`toast-store` + `ToastHost`, sin librería).
+- Formulario compartido: `src/components/products/product-form.tsx` usado por creación (`/products/new`) y edición (`/products/[id]/edit`).
+- Swipe actions: `src/components/products/swipeable-row.tsx` (react-swipeable ~6 KB) — **touch**: swipe revela Editar/Eliminar; **desktop (hover)**: acciones en hover, sin swipe. Eliminar confirma con AlertDialog y hace `softDelete`. El detalle (`/products/[id]`) tiene botones Editar/Eliminar en un footer fijo. Patrón compartido para futuros listados.
 - Sesión offline: `createBrowserClient` persiste la sesión en localStorage; `OfflineAuthGuard` respalda las rutas protegidas sin conexión.
-- Esquema remoto: `supabase/migrations/0001_initial.sql` (tablas MVP + RLS por `user_id`).
+- Esquema remoto: `supabase/migrations/0001_initial.sql` (tablas MVP + RLS por `user_id`, **idempotente** y con **GRANTs a `anon`/`authenticated`** — sin los grants, PostgREST devuelve "permission denied for table" aunque la RLS exista; el RLS igual mantiene cada fila scoped a su dueño) + `supabase/migrations/dev_reset.sql` (SOLO desarrollo: dropea todas las tablas).
 
 ---
 
