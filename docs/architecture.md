@@ -99,6 +99,19 @@ La aplicación nunca debería depender de la conexión para registrar informaci�
 
 ---
 
+# Autenticación
+
+La autenticación es gestionada por Supabase Auth (email + contraseña).
+
+- La sesión se almacena en cookies mediante `@supabase/ssr`.
+- Las mutaciones de autenticación (`signIn`, `signUp`, `signOut`) son Server Actions que usan el cliente de servidor (`src/lib/supabase/server.ts`).
+- `src/proxy.ts` (convención `proxy` de Next.js 16, reemplaza a `middleware.ts`) refresca la sesión en cada request y aplica los guardias de ruta:
+  - Usuario autenticado en `/login` o `/register` → redirect a `/dashboard`.
+  - Usuario no autenticado en rutas protegidas (ej. `/dashboard`) → redirect a `/login`.
+- Las rutas protegidas verifican el usuario nuevamente en el Server Component como defensa adicional.
+
+---
+
 # Convenciones
 
 ## Soft Delete
@@ -115,3 +128,5 @@ La interfaz prioriza:
 - simplicidad
 - pocos toques
 - buena legibilidad
+
+---
