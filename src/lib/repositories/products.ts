@@ -1,4 +1,4 @@
-import { db, type Brand, type Product, type Unit } from "@/lib/db/database";
+import { db, type Brand, type Category, type Product, type Unit } from "@/lib/db/database";
 import { scheduleSync } from "@/lib/sync/sync";
 
 /**
@@ -10,12 +10,16 @@ import { scheduleSync } from "@/lib/sync/sync";
 export interface ProductListItem extends Product {
   brand_name: string | null;
   serving_unit_name: string | null;
+  /** Lucide icon name of the product's category (null when uncategorized). */
+  category_icon: string | null;
 }
 
 /** Full detail for /products/[id]: product + all resolved names. */
 export interface ProductDetail extends Product {
   brand_name: string | null;
   category_name: string | null;
+  /** Lucide icon name of the product's category (null when uncategorized). */
+  category_icon: string | null;
   serving_unit_name: string | null;
 }
 
@@ -46,32 +50,44 @@ export const productsRepository = {
       .sortBy("name");
   },
 
-  /** Products with brand and serving unit names resolved for the list. */
+  /** Products with brand, category icon and serving unit resolved for the list. */
   async getListItems(userId: string): Promise<ProductListItem[]> {
     const products = await this.getAll(userId);
 
     const brandIds = new Set(
       products.map((product) => product.brand_id).filter((id): id is string => Boolean(id))
     );
+    const categoryIds = new Set(
+      products.map((product) => product.category_id).filter((id): id is string => Boolean(id))
+    );
     const unitIds = new Set(
       products.map((product) => product.serving_unit_id).filter((id): id is string => Boolean(id))
     );
 
-    const [brands, units] = await Promise.all([
+    const [brands, categories, units] = await Promise.all([
       brandIds.size > 0
         ? db.brands.where("id").anyOf([...brandIds]).toArray()
         : Promise.resolve([] as Brand[]),
+      categoryIds.size > 0
+        ? db.categories.where("id").anyOf([...categoryIds]).toArray()
+        : Promise.resolve([] as Category[]),
       unitIds.size > 0
         ? db.units.where("id").anyOf([...unitIds]).toArray()
         : Promise.resolve([] as Unit[]),
     ]);
 
     const brandName = new Map(brands.map((brand) => [brand.id, brand.name]));
+    const categoryIcon = new Map(
+      categories.map((category) => [category.id, category.icon])
+    );
     const unitName = new Map(units.map((unit) => [unit.id, unit.name]));
 
     return products.map((product) => ({
       ...product,
       brand_name: product.brand_id ? (brandName.get(product.brand_id) ?? null) : null,
+      category_icon: product.category_id
+        ? (categoryIcon.get(product.category_id) ?? null)
+        : null,
       serving_unit_name: product.serving_unit_id
         ? (unitName.get(product.serving_unit_id) ?? null)
         : null,
@@ -99,6 +115,7 @@ export const productsRepository = {
       ...product,
       brand_name: brand?.name ?? null,
       category_name: category?.name ?? null,
+      category_icon: category?.icon ?? null,
       serving_unit_name: unit?.name ?? null,
     };
   },
@@ -131,6 +148,41 @@ export const productsRepository = {
     scheduleSync();
 
     return product;
+  },
+
+  /**
+   * Updates an existing product in place. Preserves created_at, sugars and
+   * sodium (the form does not expose them yet); bumps updated_at so the
+   * sync loop picks the row up. Returns null when the product does not exist.
+   */
+  async update(
+    userId: string,
+    id: string,
+    input: ProductInput
+  ): Promise<Product | null> {
+    const existing = await db.products.get({ id, user_id: userId });
+    if (!existing || existing.deleted_at) return null;
+
+    const updated: Product = {
+      ...existing,
+      name: input.name.trim(),
+      brand_id: input.brand_id,
+      category_id: input.category_id,
+      serving_amount: input.serving_amount,
+      serving_unit_id: input.serving_unit_id,
+      serving_weight_grams: input.serving_weight_grams,
+      protein: input.protein,
+      carbs: input.carbs,
+      fat: input.fat,
+      fiber: input.fiber,
+      calories: input.calories,
+      updated_at: now(),
+    };
+
+    await db.products.put(updated);
+    scheduleSync();
+
+    return updated;
   },
 
   async softDelete(userId: string, id: string): Promise<void> {

@@ -22,6 +22,8 @@ export interface Unit extends SyncEntity {
 
 export interface Category extends SyncEntity {
   name: string;
+  /** Lucide icon name (see src/lib/icons/category-icon.tsx); default "package". */
+  icon: string;
 }
 
 export interface Brand extends SyncEntity {
