@@ -64,6 +64,8 @@ Ejemplos:
 
 Las categorías son administradas por el usuario.
 
+Cada categoría tiene un `icon` (nombre del ícono de lucide) que viaja con el sync; la UI lo renderiza como avatar del producto (fallback: `package`). Productos sin categoría muestran `UtensilsCrossed`.
+
 ---
 
 ## Brands
@@ -305,18 +307,18 @@ Products
 
 ## Categories
 
-- Huevos
-- Carnes
-- Lácteos
-- Frutas
-- Verduras
-- Panificados
-- Cereales
-- Legumbres
-- Bebidas
-- Suplementos
-- Snacks
-- Otros
+- Huevos (`egg`)
+- Carnes (`drumstick`)
+- Lácteos (`milk`)
+- Frutas (`apple`)
+- Verduras (`carrot`)
+- Panificados (`croissant`)
+- Cereales (`wheat`)
+- Legumbres (`bean`)
+- Bebidas (`cup-soda`)
+- Suplementos (`pill`)
+- Snacks (`candy`)
+- Otros (`package`)
 
 ---
 

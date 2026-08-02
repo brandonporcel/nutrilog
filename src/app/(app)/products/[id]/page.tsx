@@ -1,14 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   productsRepository,
   type ProductDetail,
 } from "@/lib/repositories/products";
+import { CategoryIcon } from "@/lib/icons/category-icon";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "@/lib/ui/toast-store";
 
 function servingText(product: ProductDetail): string {
   const parts = [product.serving_amount, product.serving_unit_name].filter(
@@ -44,23 +57,35 @@ function SectionTitle({ children }: { children: ReactNode }) {
 }
 
 export default function ProductDetailPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
+  const [userId, setUserId] = useState<string | null>(null);
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [state, setState] = useState<"loading" | "found" | "missing">(
     "loading"
   );
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     createClient()
       .auth.getSession()
       .then(async ({ data }) => {
-        const userId = data.session?.user.id;
-        if (!userId) return;
-        const detail = await productsRepository.getDetail(userId, params.id);
+        const currentUserId = data.session?.user.id;
+        if (!currentUserId) return;
+        setUserId(currentUserId);
+        const detail = await productsRepository.getDetail(currentUserId, params.id);
         setProduct(detail);
         setState(detail ? "found" : "missing");
       });
   }, [params.id]);
+
+  async function handleDelete() {
+    if (!userId) return;
+    await productsRepository.softDelete(userId, params.id);
+    setConfirmDelete(false);
+    toast("Producto eliminado");
+    router.push("/products");
+  }
 
   if (state === "loading") {
     return (
@@ -85,14 +110,22 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 px-margin-mobile pb-8 pt-4">
+    <div className="flex flex-col gap-6 px-margin-mobile pb-32 pt-4">
       {/* Identificación */}
       <section className="flex flex-col gap-2">
         <SectionTitle>Identificación</SectionTitle>
         <div className="flex flex-col gap-3 rounded-xl border border-outline-variant bg-surface p-4">
-          <h1 className="text-headline-lg-mobile text-on-surface">
-            {product.name}
-          </h1>
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
+              <CategoryIcon
+                icon={product.category_id ? product.category_icon : null}
+                className="size-6"
+              />
+            </div>
+            <h1 className="text-headline-lg-mobile text-on-surface">
+              {product.name}
+            </h1>
+          </div>
           <div className="flex flex-wrap gap-2">
             {product.brand_name && (
               <span className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-label-caps text-on-surface-variant">
@@ -147,6 +180,49 @@ export default function ProductDetailPage() {
           <MacroCard label="Fibras" value={`${product.fiber} g`} />
         </div>
       </section>
+
+      {/* Actions (the bottom nav is hidden on this screen) */}
+      <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant bg-surface p-margin-mobile">
+        <div className="mx-auto flex max-w-[768px] gap-3">
+          <Button
+            render={<Link href={`/products/${product.id}/edit`} />}
+            nativeButton={false}
+            className="h-touch-target-min flex-1 rounded-full text-title-md"
+          >
+            Editar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setConfirmDelete(true)}
+            className="h-touch-target-min flex-1 rounded-full text-title-md"
+          >
+            Eliminar
+          </Button>
+        </div>
+      </footer>
+
+      {/* Delete confirmation */}
+      <AlertDialog
+        open={confirmDelete}
+        onOpenChange={(open) => {
+          if (!open) setConfirmDelete(false);
+        }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              “{product.name}” se quita de tu lista de productos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
