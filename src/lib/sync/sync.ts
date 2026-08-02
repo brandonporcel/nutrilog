@@ -1,8 +1,10 @@
-import { db, type Unit } from "@/lib/db/database";
+import { type EntityTable } from "dexie";
+
+import { db, type SyncEntity } from "@/lib/db/database";
 import { createClient } from "@/lib/supabase/client";
 
 /**
- * Sync loop (Epic 5 grows this; today only `units` syncs).
+ * Sync loop (Epic 5 grows this; today it syncs units, products, categories and brands).
  *
  * Strategy — changes since last sync:
  *  - push: local rows with updated_at > lastSyncedAt → upsert to Supabase
@@ -15,9 +17,15 @@ import { createClient } from "@/lib/supabase/client";
 
 const TABLES = {
   units: db.units,
+  products: db.products,
+  categories: db.categories,
+  brands: db.brands,
 } as const;
 
 type SyncableTable = keyof typeof TABLES;
+
+/** Every syncable entity extends SyncEntity, so a single table type is enough here. */
+type SyncTable = EntityTable<SyncEntity, "id">;
 
 let syncInProgress = false;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
@@ -47,7 +55,9 @@ export async function sync(): Promise<void> {
   if (typeof window === "undefined" || syncInProgress) return;
   syncInProgress = true;
   try {
-    await syncTable("units");
+    for (const entity of Object.keys(TABLES) as SyncableTable[]) {
+      await syncTable(entity);
+    }
   } finally {
     syncInProgress = false;
   }
@@ -61,7 +71,7 @@ async function syncTable(entity: SyncableTable) {
   if (!session?.user) return;
 
   const userId = session.user.id;
-  const table = TABLES[entity];
+  const table = TABLES[entity] as unknown as SyncTable;
   const lastSyncedAt = await getLastSyncedAt(entity);
   const startedAt = new Date().toISOString();
 
@@ -70,7 +80,7 @@ async function syncTable(entity: SyncableTable) {
     ? await table
         .where("user_id")
         .equals(userId)
-        .filter((row: Unit) => row.updated_at > lastSyncedAt)
+        .filter((row) => row.updated_at > lastSyncedAt)
         .toArray()
     : await table.where("user_id").equals(userId).toArray();
 
@@ -89,7 +99,7 @@ async function syncTable(entity: SyncableTable) {
   if (pullError) return;
 
   if (remoteChanges && remoteChanges.length > 0) {
-    for (const remote of remoteChanges as Unit[]) {
+    for (const remote of remoteChanges as SyncEntity[]) {
       const local = await table.get(remote.id);
       if (!local || remote.updated_at > local.updated_at) {
         await table.put(remote);

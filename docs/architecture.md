@@ -75,7 +75,7 @@ Backend
 
 # Flujo de datos
 
-Estado: implementado para el catálogo Units (SDD 03); las demás entidades siguen el mismo flujo desde el Epic 1.
+Estado: implementado para los catálogos Units, Products, Categories y Brands (SDD 03 + SDD 04); las demás entidades siguen el mismo flujo desde su Epic.
 
 Usuario
 
@@ -112,11 +112,11 @@ La lógica de negocio vive en una capa de repositorios entre la UI y el almacena
 - La sincronización nunca bloquea la interacción del usuario.
 - Esto evita duplicar lógica de negocio entre cliente y servidor: se escribe una sola vez, contra la capa local.
 
-Implementado (SDD 03):
+Implementado (SDD 03 y SDD 04):
 
 - `src/lib/db/database.ts`: esquema Dexie v1 con todas las entidades sincronizables (snake_case, mismas que el esquema remoto → sin capa de mapeo).
-- `src/lib/repositories/units.ts`: patrón de repositorio (`getAll`/`save`/`softDelete` + seeds); el Epic 1 extiende el patrón al resto de las entidades.
-- `src/lib/sync/sync.ts`: sync por timestamps (changes-since) — push de filas con `updated_at > lastSyncedAt` y pull con merge last-write-wins; `meta` guarda `lastSyncedAt` por entidad.
+- Repositorios: `src/lib/repositories/units.ts` (patrón base), `products.ts` (`getListItems` resuelve marca y unidad de porción), `categories.ts` (+ seeds) y `brands.ts` (`getOrCreateByName`); el Epic 1 extiende el patrón al resto de las entidades.
+- `src/lib/sync/sync.ts`: sync por timestamps (changes-since) — push de filas con `updated_at > lastSyncedAt` y pull con merge last-write-wins; `meta` guarda `lastSyncedAt` por entidad. Hoy sincroniza `units`, `products`, `categories` y `brands`.
 - Disparadores de sync: carga de la app, evento `online`, retorno a la app y tras escrituras (debounced) — `src/lib/sync/`.
 - Sesión offline: `createBrowserClient` persiste la sesión en localStorage; `OfflineAuthGuard` respalda las rutas protegidas sin conexión.
 - Esquema remoto: `supabase/migrations/0001_initial.sql` (tablas MVP + RLS por `user_id`).
@@ -130,8 +130,8 @@ La autenticación es gestionada por Supabase Auth (email + contraseña).
 - La sesión se almacena en cookies mediante `@supabase/ssr`.
 - Las mutaciones de autenticación (`signIn`, `signUp`, `signOut`) son Server Actions que usan el cliente de servidor (`src/lib/supabase/server.ts`).
 - `src/proxy.ts` (convención `proxy` de Next.js 16, reemplaza a `middleware.ts`) refresca la sesión en cada request y aplica los guardias de ruta:
-  - Usuario autenticado en `/login` o `/register` → redirect a `/dashboard`.
-  - Usuario no autenticado en rutas protegidas (ej. `/dashboard`) → redirect a `/login`.
+  - Usuario autenticado en `/login` o `/register` → redirect a `/products`.
+  - Usuario no autenticado en rutas protegidas (dashboard, units, history, templates, products) → redirect a `/login`.
 - Las rutas protegidas verifican el usuario nuevamente en el Server Component como defensa adicional.
 
 Sesión offline (pendiente, Epic 5):
@@ -159,13 +159,21 @@ NutriLog es una PWA instalable (manifest + service worker manual, sin integraci�
 - El manifest se genera con `src/app/manifest.ts` (convención de Next.js): nombre, descripción, `start_url`, `display: standalone` e íconos PNG 192/512 (`any` y `maskable`).
 - Los íconos viven en `public/icons/` y se generan con `scripts/generate-icons.mjs` (sharp sobre un SVG; comando `node scripts/generate-icons.mjs`).
 - El service worker (`public/sw.js`) es manual:
-  - precachea el shell en `install` (`/`, `/login`, `/register`, `/dashboard`, manifest e íconos);
+  - precachea el shell en `install` (`/`, `/login`, `/register`, `/dashboard`, `/products`, manifest e íconos);
   - navegaciones: network-first con fallback a caché;
   - estáticos (`/_next/static`, íconos, manifest): cache-first;
   - `CACHE_VERSION` versiona el caché: subirla en cada deploy invalida la versión anterior.
 - El registro del SW ocurre solo en producción (`src/components/pwa/service-worker-register.tsx`), para no cachear assets de desarrollo.
 - `src/proxy.ts` excluye `/sw.js` y `/manifest.webmanifest` del matcher.
 - El offline de datos (Dexie/IndexedDB, cola de sincronización) es el **Epic 5** y todavía no existe.
+
+# Navegación (SDD 04)
+
+Las pantallas autenticadas viven en el route group `src/app/(app)/` (no cambia las URLs) y heredan el shell desde su layout:
+
+- `AppShell` (`src/components/shell/`): header fijo (hamburguesa o back arrow en pantallas de tarea), bottom nav con 4 tabs (Inicio, Histórico, Modelos, Productos) y FAB contextual configurado por ruta.
+- El drawer del hamburguesa usa shadcn **Sheet** (Base UI Dialog) y agrupa lo que no entra en la bottom nav: Perfil (pendiente), Unidades (temporal) y Cerrar sesión.
+- La pantalla de Productos (`/products`) muestra la proteína **por porción** tal como figura en la etiqueta (ej. "7,7 g · por 2 rebanadas (59 g)"), sin conversión a 100 g.
 
 ---
 
