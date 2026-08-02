@@ -6,13 +6,14 @@
  *  - Static assets and icons: cache first.
  * Bump CACHE_VERSION to invalidate previous caches on deploy.
  */
-const CACHE_VERSION = "nutrilog-v1";
+const CACHE_VERSION = "nutrilog-v2";
 
 const PRECACHE_URLS = [
   "/",
   "/login",
   "/register",
   "/dashboard",
+  "/products",
   "/manifest.webmanifest",
   "/icons/icon-192.png",
   "/icons/icon-512.png",

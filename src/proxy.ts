@@ -14,12 +14,16 @@ export async function proxy(request: NextRequest) {
 
   // Authenticated users do not belong on the auth screens.
   if (user && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/products", request.url));
   }
 
   // Protected routes require a session.
-  const protectedPaths = ["/dashboard", "/units"];
-  if (!user && protectedPaths.includes(pathname)) {
+  const protectedPaths = ["/dashboard", "/units", "/history", "/templates"];
+  const isProtected =
+    protectedPaths.includes(pathname) ||
+    pathname === "/products" ||
+    pathname.startsWith("/products/");
+  if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

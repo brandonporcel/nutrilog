@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NutriLog - Novo Produto</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#ef9900",
+                    "outline-variant": "#bccbb9",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#006e2f",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed-variant": "#005321",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#4ae176",
+                    "inverse-surface": "#213145",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#3d4a3d",
+                    "surface-container-high": "#dce9ff",
+                    "on-primary-fixed": "#002109",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#4ae176",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-variant": "#d3e4fe",
+                    "secondary-fixed": "#a6f4b5",
+                    "secondary": "#1f6c3a",
+                    "on-surface": "#0b1c30",
+                    "on-secondary-container": "#24703e",
+                    "surface-container-highest": "#d3e4fe",
+                    "surface": "#f8f9ff",
+                    "tertiary-fixed": "#ffddb8",
+                    "tertiary": "#855300",
+                    "surface-container": "#e5eeff",
+                    "on-secondary-fixed-variant": "#005226",
+                    "primary-fixed": "#6bff8f",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#5c3800",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "surface-container-low": "#eff4ff",
+                    "surface-dim": "#cbdbf5",
+                    "secondary-container": "#a4f1b2",
+                    "primary-container": "#22c55e",
+                    "outline": "#6d7b6c",
+                    "surface-bright": "#f8f9ff",
+                    "error": "#ba1a1a",
+                    "background": "#f8f9ff",
+                    "on-background": "#0b1c30",
+                    "primary": "#006e2f",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-secondary-fixed": "#00210b",
+                    "on-primary-container": "#004b1e",
+                    "secondary-fixed-dim": "#8bd79b",
+                    "on-tertiary-fixed": "#2a1700"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "margin-mobile": "16px",
+                    "touch-target-min": "48px",
+                    "margin-desktop": "24px",
+                    "gutter": "12px",
+                    "list-item-gap": "8px"
+            },
+            "fontFamily": {
+                    "body-sm-dense": ["Inter"],
+                    "title-md": ["Inter"],
+                    "display-protein": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "numeric-data": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "body-sm-dense": ["14px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "display-protein": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "numeric-data": ["16px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        input:focus {
+            outline: none;
+            border-color: #006e2f;
+            box-shadow: 0 0 0 1px #006e2f;
+        }
+        .glass-header {
+            background: rgba(248, 249, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        /* Custom Keypad animation simulation */
+        .slide-up {
+            animation: slideUp 0.3s cubic-bezier(0, 0, 0.2, 1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- Top App Bar (Suppressing Navigation Shell as per task-focused sub-page rule) -->
+<header class="fixed top-0 left-0 right-0 z-40 glass-header border-b border-outline-variant">
+<div class="flex justify-between items-center w-full px-margin-mobile h-touch-target-min">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md font-bold text-primary">Cadastrar Produto</h1>
+<div class="w-10"></div> <!-- Spacer for symmetry -->
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-16 pb-32 max-w-[768px] mx-auto w-full px-margin-mobile flex flex-col gap-gutter">
+<!-- Hero Visual Section -->
+<div class="relative w-full h-48 rounded-xl overflow-hidden mt-base">
+<div class="absolute inset-0 z-0" data-alt="A clean, professional studio photograph of fresh high-protein ingredients like chicken breast, eggs, and Greek yogurt arranged on a white marble surface. The lighting is bright and clinical, reflecting a modern healthcare and nutrition aesthetic. The color palette is dominated by soft whites and vibrant greens, evoking a sense of discipline and nutritional clarity. Minimalist composition with a focus on fresh, healthy textures." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBORcnTZA7X04zCL1-7KX_RwhprLUHNvMChdrRx30dUaqTpnG2nFXtMDWohkMRpP18UP26mUF94GzMm4czGc5CL04sPX4dp54gNnH3evhzfSx6bKX_nR__dU5GXuZhgJQzH1YeRsFYRvaJTuSQgWXYZ3J2BUaNkfckHt8EJi3V0jQYMhhtRFNKgAPzLleRDZfm1DObxLQ2Ww-MRhkNEwxEcPHpEfzR2paPSiWE4wF2hmRRs1Nn9nG_Ukw')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+<span class="text-white font-label-caps text-label-caps opacity-90">NUTRILOG DATABASE</span>
+<h2 class="text-white font-headline-lg-mobile text-headline-lg-mobile">Detalhes do Alimento</h2>
+</div>
+</div>
+<!-- Section: Identificação -->
+<section class="flex flex-col gap-base">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant px-1 uppercase">Identificação</h3>
+<div class="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col gap-4">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-[10px] text-outline px-1">Nome do Produto</label>
+<input class="w-full h-12 px-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-body-lg font-body-lg focus:border-primary transition-all" placeholder="Ex: Peito de Frango Grelhado" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-[10px] text-outline px-1">Marca / Fabricante</label>
+<input class="w-full h-12 px-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-body-lg font-body-lg" placeholder="Opcional" type="text"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-[10px] text-outline px-1">Categoria</label>
+<div class="relative h-12">
+<select class="w-full h-full px-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-body-lg font-body-lg appearance-none">
+<option>Proteínas</option>
+<option>Carboidratos</option>
+<option>Gorduras</option>
+<option>Laticínios</option>
+<option>Outros</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Porção -->
+<section class="flex flex-col gap-base">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant px-1 uppercase">Porção</h3>
+<div class="bg-surface border border-outline-variant rounded-xl p-4">
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-[10px] text-outline px-1 text-center">Quantidade</label>
+<input class="w-full h-12 text-center rounded-lg bg-surface-container-lowest border border-outline-variant font-numeric-data text-numeric-data" type="number" value="1"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-[10px] text-outline px-1 text-center">Unidade</label>
+<input class="w-full h-12 text-center rounded-lg bg-surface-container-lowest border border-outline-variant font-body-lg text-body-lg" placeholder="unid." type="text"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-[10px] text-outline px-1 text-center">Peso (g/ml)</label>
+<input class="w-full h-12 text-center rounded-lg bg-surface-container-lowest border border-outline-variant font-numeric-data text-numeric-data" placeholder="100" type="number"/>
+</div>
+</div>
+<div class="mt-4 flex gap-2 flex-wrap">
+<span class="bg-surface-container-low text-on-surface-variant font-label-caps text-[10px] px-3 py-1 rounded-full border border-outline-variant cursor-pointer hover:bg-secondary-container hover:text-on-secondary-container transition-colors">100g</span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-caps text-[10px] px-3 py-1 rounded-full border border-outline-variant cursor-pointer hover:bg-secondary-container hover:text-on-secondary-container transition-colors">1 Scoop (30g)</span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-caps text-[10px] px-3 py-1 rounded-full border border-outline-variant cursor-pointer hover:bg-secondary-container hover:text-on-secondary-container transition-colors">1 Unidade</span>
+</div>
+</div>
+</section>
+<!-- Section: Nutrição (Bento Style) -->
+<section class="flex flex-col gap-base">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant px-1 uppercase">Informação Nutricional</h3>
+<div class="grid grid-cols-2 gap-3">
+<!-- Highlighted Protein Card -->
+<div class="col-span-2 bg-primary-container text-on-primary-container rounded-xl p-5 flex flex-col items-center justify-center gap-1 border-2 border-primary">
+<span class="font-label-caps text-label-caps uppercase opacity-80">Proteína</span>
+<div class="flex items-baseline gap-1">
+<input class="bg-transparent border-none text-center font-display-protein text-display-protein w-40 p-0 focus:ring-0 placeholder:text-on-primary-container/30" placeholder="0.0" type="number"/>
+<span class="font-title-md text-title-md">g</span>
+</div>
+<p class="font-body-sm-dense text-body-sm-dense opacity-70">Nutriente prioritário</p>
+</div>
+<!-- Calories Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Calorias</span>
+<div class="flex items-baseline gap-1">
+<input class="bg-transparent border-none text-center font-headline-lg-mobile text-headline-lg-mobile w-20 p-0 focus:ring-0" placeholder="0" type="number"/>
+<span class="font-label-caps text-label-caps text-outline">kcal</span>
+</div>
+</div>
+<!-- Carbs Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Carbos</span>
+<div class="flex items-baseline gap-1">
+<input class="bg-transparent border-none text-center font-headline-lg-mobile text-headline-lg-mobile w-20 p-0 focus:ring-0" placeholder="0" type="number"/>
+<span class="font-label-caps text-label-caps text-outline">g</span>
+</div>
+</div>
+<!-- Fat Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Gorduras</span>
+<div class="flex items-baseline gap-1">
+<input class="bg-transparent border-none text-center font-headline-lg-mobile text-headline-lg-mobile w-20 p-0 focus:ring-0" placeholder="0" type="number"/>
+<span class="font-label-caps text-label-caps text-outline">g</span>
+</div>
+</div>
+<!-- Fibers/Sodium Micro-Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-4 flex flex-col items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Fibras</span>
+<div class="flex items-baseline gap-1">
+<input class="bg-transparent border-none text-center font-headline-lg-mobile text-headline-lg-mobile w-20 p-0 focus:ring-0" placeholder="0" type="number"/>
+<span class="font-label-caps text-label-caps text-outline">g</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Scan Barcode (Task-specific shortcut) -->
+<button class="mt-4 flex items-center justify-center gap-3 w-full h-14 bg-surface-container-high border border-outline rounded-xl text-primary font-title-md transition-all active:scale-95">
+<span class="material-symbols-outlined">barcode_scanner</span>
+            Escanear Código de Barras
+        </button>
+</main>
+<!-- Bottom Action Area -->
+<footer class="fixed bottom-0 left-0 right-0 p-margin-mobile glass-header border-t border-outline-variant flex justify-center z-50">
+<div class="max-w-[768px] w-full">
+<button class="w-full h-touch-target-min bg-primary text-on-primary rounded-full font-title-md flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                Salvar Produto
+            </button>
+</div>
+</footer>
+<!-- Success Feedback Overlay (Hidden by default) -->
+<div class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] bg-inverse-surface text-inverse-on-surface px-6 py-3 rounded-full flex items-center gap-2 shadow-xl translate-y-20 opacity-0 pointer-events-none transition-all duration-500" id="success-toast">
+<span class="material-symbols-outlined text-primary-fixed">check_circle</span>
+<span class="font-label-caps text-label-caps">Produto salvo com sucesso!</span>
+</div>
+<script>
+        // Simple Interaction logic for the "Save" button
+        document.querySelector('button.bg-primary').addEventListener('click', () => {
+            const toast = document.getElementById('success-toast');
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        });
+
+        // Numerical input micro-interactions: Highlight container on focus
+        const numericInputs = document.querySelectorAll('input[type="number"]');
+        numericInputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.closest('.bg-surface, .bg-primary-container').classList.add('ring-2', 'ring-primary/20');
+            });
+            input.addEventListener('blur', () => {
+                input.closest('.bg-surface, .bg-primary-container').classList.remove('ring-2', 'ring-primary/20');
+            });
+        });
+    </script>
+</body></html>

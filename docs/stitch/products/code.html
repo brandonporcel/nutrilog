@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>NutriLog - Produtos</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <!-- Tailwind Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#ef9900",
+                        "outline-variant": "#bccbb9",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#006e2f",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#005321",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#4ae176",
+                        "inverse-surface": "#213145",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#3d4a3d",
+                        "surface-container-high": "#dce9ff",
+                        "on-primary-fixed": "#002109",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#4ae176",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-variant": "#d3e4fe",
+                        "secondary-fixed": "#a6f4b5",
+                        "secondary": "#1f6c3a",
+                        "on-surface": "#0b1c30",
+                        "on-secondary-container": "#24703e",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface": "#f8f9ff",
+                        "tertiary-fixed": "#ffddb8",
+                        "tertiary": "#855300",
+                        "surface-container": "#e5eeff",
+                        "on-secondary-fixed-variant": "#005226",
+                        "primary-fixed": "#6bff8f",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#5c3800",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-low": "#eff4ff",
+                        "surface-dim": "#cbdbf5",
+                        "secondary-container": "#a4f1b2",
+                        "primary-container": "#22c55e",
+                        "outline": "#6d7b6c",
+                        "surface-bright": "#f8f9ff",
+                        "error": "#ba1a1a",
+                        "background": "#f8f9ff",
+                        "on-background": "#0b1c30",
+                        "primary": "#006e2f",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-secondary-fixed": "#00210b",
+                        "on-primary-container": "#004b1e",
+                        "secondary-fixed-dim": "#8bd79b",
+                        "on-tertiary-fixed": "#2a1700"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "touch-target-min": "48px",
+                        "margin-desktop": "24px",
+                        "gutter": "12px",
+                        "list-item-gap": "8px"
+                    },
+                    "fontFamily": {
+                        "body-sm-dense": ["Inter"],
+                        "title-md": ["Inter"],
+                        "display-protein": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "numeric-data": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm-dense": ["14px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "display-protein": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "numeric-data": ["16px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* High-density list row hover */
+        .list-row:active {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center">
+    <!-- TopAppBar -->
+    <header
+        class="bg-surface border-b border-outline-variant fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min max-w-[768px]">
+        <div class="flex items-center gap-4">
+            <button aria-label="Menu"
+                class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container-low transition-opacity">
+                <span class="material-symbols-outlined text-primary">menu</span>
+            </button>
+            <h1 class="font-title-md text-title-md font-bold text-primary">NutriLog</h1>
+        </div>
+        <span class="font-label-caps text-label-caps text-primary">Julho 2026</span>
+    </header>
+    <!-- Main Content Canvas -->
+    <main class="w-full max-w-[768px] pt-16 pb-20 px-0 flex flex-col bg-surface-container-lowest min-h-screen">
+        <!-- Search and Filter Sticky Section -->
+        <div class="sticky top-[48px] bg-surface z-40 px-margin-mobile py-base border-b border-outline-variant">
+            <!-- Search Bar -->
+            <div class="relative w-full mb-3 mt-2">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="material-symbols-outlined text-on-surface-variant">search</span>
+                </div>
+                <input
+                    class="block w-full pl-10 pr-3 py-2 bg-surface-container border border-outline-variant rounded-xl focus:ring-primary focus:border-primary text-body-lg"
+                    placeholder="Buscar produtos..." type="text">
+            </div>
+            <!-- Category Chips -->
+            <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+                <button
+                    class="flex-none px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-caps text-label-caps border border-primary">TUDO</button>
+                <button
+                    class="flex-none px-4 py-1.5 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-low transition-colors">PROTEÍNA</button>
+                <button
+                    class="flex-none px-4 py-1.5 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-low transition-colors">CARBO</button>
+                <button
+                    class="flex-none px-4 py-1.5 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-low transition-colors">GORDURA</button>
+                <button
+                    class="flex-none px-4 py-1.5 rounded-full bg-surface border border-outline-variant text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-low transition-colors">SUPLEMENTO</button>
+            </div>
+        </div>
+        <!-- High-Density Products List -->
+        <div class="flex flex-col">
+            <!-- List Header (Optional but helps density feel) -->
+            <div
+                class="px-margin-mobile py-2 bg-surface-container-low flex justify-between items-center border-b border-outline-variant">
+                <span class="font-label-caps text-label-caps text-on-surface-variant opacity-70 uppercase">Produto /
+                    Marca</span>
+                <span class="font-label-caps text-label-caps text-on-surface-variant opacity-70 uppercase">Prot /
+                    100g</span>
+            </div>
+            <!-- List Entries -->
+            <div class="divide-y divide-outline-variant" id="product-list">
+                <!-- Entry 1 -->
+                <div
+                    class="list-row flex items-center px-margin-mobile py-3 hover:bg-surface-container transition-colors cursor-pointer">
+                    <div
+                        class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="material-symbols-outlined text-secondary">restaurant</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-body-lg text-body-lg font-semibold truncate">Peito de Frango Grelhado</h3>
+                        <p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant truncate">NutriLog
+                            Cozinha</p>
+                    </div>
+                    <div class="text-right ml-4 flex-shrink-0">
+                        <span class="font-numeric-data text-numeric-data text-primary">31g</span>
+                        <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">por 100g</p>
+                    </div>
+                </div>
+                <!-- Entry 2 -->
+                <div
+                    class="list-row flex items-center px-margin-mobile py-3 hover:bg-surface-container transition-colors cursor-pointer">
+                    <div
+                        class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="material-symbols-outlined text-tertiary">egg</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-body-lg text-body-lg font-semibold truncate">Ovo Cozido Inteiro</h3>
+                        <p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant truncate">Fazenda Real
+                        </p>
+                    </div>
+                    <div class="text-right ml-4 flex-shrink-0">
+                        <span class="font-numeric-data text-numeric-data text-primary">13g</span>
+                        <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">por 100g</p>
+                    </div>
+                </div>
+                <!-- Entry 3 -->
+                <div
+                    class="list-row flex items-center px-margin-mobile py-3 hover:bg-surface-container transition-colors cursor-pointer">
+                    <div
+                        class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="material-symbols-outlined text-on-primary-container">fitness_center</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-body-lg text-body-lg font-semibold truncate">Whey Protein Isolado</h3>
+                        <p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant truncate">Growth
+                            Supplements</p>
+                    </div>
+                    <div class="text-right ml-4 flex-shrink-0">
+                        <span class="font-numeric-data text-numeric-data text-primary">88g</span>
+                        <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">por 100g</p>
+                    </div>
+                </div>
+                <!-- Entry 4 -->
+                <div
+                    class="list-row flex items-center px-margin-mobile py-3 hover:bg-surface-container transition-colors cursor-pointer">
+                    <div
+                        class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="material-symbols-outlined text-secondary">lunch_dining</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-body-lg text-body-lg font-semibold truncate">Patinho Moído</h3>
+                        <p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant truncate">NutriLog
+                            Cozinha</p>
+                    </div>
+                    <div class="text-right ml-4 flex-shrink-0">
+                        <span class="font-numeric-data text-numeric-data text-primary">26g</span>
+                        <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">por 100g</p>
+                    </div>
+                </div>
+                <!-- Entry 5 -->
+                <div
+                    class="list-row flex items-center px-margin-mobile py-3 hover:bg-surface-container transition-colors cursor-pointer">
+                    <div
+                        class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary">save_as</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-body-lg text-body-lg font-semibold truncate">Iogurte Natural</h3>
+                        <p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant truncate">Itambé</p>
+                    </div>
+                    <div class="text-right ml-4 flex-shrink-0">
+                        <span class="font-numeric-data text-numeric-data text-primary">4g</span>
+                        <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">por 100g</p>
+                    </div>
+                </div>
+                <!-- Entry 6 -->
+                <div
+                    class="list-row flex items-center px-margin-mobile py-3 hover:bg-surface-container transition-colors cursor-pointer">
+                    <div
+                        class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="material-symbols-outlined text-tertiary">inventory_2</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-body-lg text-body-lg font-semibold truncate">Atum Ralado em Água</h3>
+                        <p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant truncate">Gomes da Costa
+                        </p>
+                    </div>
+                    <div class="text-right ml-4 flex-shrink-0">
+                        <span class="font-numeric-data text-numeric-data text-primary">18g</span>
+                        <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">por 100g</p>
+                    </div>
+                </div>
+                <!-- Entry 7 -->
+                <div
+                    class="list-row flex items-center px-margin-mobile py-3 hover:bg-surface-container transition-colors cursor-pointer">
+                    <div
+                        class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="material-symbols-outlined text-on-primary-container">energy_savings_leaf</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h3 class="font-body-lg text-body-lg font-semibold truncate">Tofu Firme</h3>
+                        <p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant truncate">Agronippo</p>
+                    </div>
+                    <div class="text-right ml-4 flex-shrink-0">
+                        <span class="font-numeric-data text-numeric-data text-primary">12g</span>
+                        <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">por 100g</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Spacer for FAB -->
+        <div class="h-12"></div>
+    </main>
+    <!-- FAB -->
+    <button aria-label="Adicionar Produto"
+        class="fixed bottom-20 right-margin-mobile w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform">
+        <span class="material-symbols-outlined text-3xl">add</span>
+    </button>
+    <!-- BottomNavBar -->
+    <nav
+        class="fixed bottom-0 w-full z-40 bg-surface border-t border-outline-variant flex justify-around items-center h-16 max-w-[768px]">
+        <a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all"
+            href="#">
+            <span class="material-symbols-outlined">home</span>
+            <span class="font-label-caps text-label-caps">Início</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all"
+            href="#">
+            <span class="material-symbols-outlined">history</span>
+            <span class="font-label-caps text-label-caps">Histórico</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all"
+            href="#">
+            <span class="material-symbols-outlined">receipt_long</span>
+            <span class="font-label-caps text-label-caps">Modelos</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-primary font-bold active:scale-95 transition-transform"
+            href="#">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+            <span class="font-label-caps text-label-caps">Produtos</span>
+        </a>
+    </nav>
+    <script>
+        // Micro-interaction for list rows
+        document.querySelectorAll('.list-row').forEach(row => {
+            row.addEventListener('click', () => {
+                row.classList.add('bg-primary-container', 'bg-opacity-20');
+                setTimeout(() => {
+                    row.classList.remove('bg-primary-container', 'bg-opacity-20');
+                }, 200);
+            });
+        });
+
+        // Search filtering simulation
+        const searchInput = document.querySelector('input[type="text"]');
+        const rows = document.querySelectorAll('.list-row');
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(term)) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Simple feedback for FAB
+        document.querySelector('button[aria-label="Adicionar Produto"]').addEventListener('click', () => {
+            console.log('Open Add Product Modal');
+        });
+    </script>
+</body>
+
+</html>
