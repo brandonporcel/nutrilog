@@ -50,7 +50,7 @@ Objetivos
 
 Estado
 
-⬜ Pendiente
+🚧 En progreso (crear, listar y ver detalle de productos con navegación, SDD 04 y 05 ✅; pendiente: editar/eliminar producto, CRUD completo de categorías, marcas y unidades)
 
 Objetivos
 
