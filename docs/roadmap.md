@@ -36,7 +36,7 @@ Objetivos
 - Configurar Next.js
 - Configurar TypeScript
 - Configurar Tailwind CSS
-- Configurar PWA
+- Configurar PWA ✅
 - Configurar shadcn/ui
 - Configurar Dexie
 - Definir arquitectura
