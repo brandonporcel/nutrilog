@@ -103,4 +103,11 @@ db.version(1).stores({
   meta: "key",
 });
 
+// v2: index template_items by template_id (getDetail/update/softDelete) and
+// compound id+user_id lookups on templates (avoids full scans).
+db.version(2).stores({
+  templates: "id, user_id, updated_at, [id+user_id]",
+  template_items: "id, user_id, updated_at, template_id, [template_id+user_id]",
+});
+
 export { db };

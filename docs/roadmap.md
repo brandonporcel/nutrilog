@@ -109,14 +109,14 @@ El usuario puede saber rápidamente si alcanzó su objetivo.
 
 Estado
 
-⬜ Pendiente
+🚧 En progreso (crear, listar, editar y eliminar plantillas, SDD 07 ✅; pendiente: duplicar plantillas y aplicar plantilla al día — esto último depende del registro diario, Epic 2)
 
 Objetivos
 
-- Crear comidas frecuentes
-- Editar plantillas
+- Crear comidas frecuentes ✅
+- Editar plantillas ✅
 - Duplicar plantillas
-- Agregar plantilla al día
+- Agregar plantilla al día (→ Epic 2: tocar una plantilla abre "Nueva comida" con los productos precargados)
 
 Resultado esperado
 

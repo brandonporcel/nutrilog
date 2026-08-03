@@ -34,13 +34,16 @@ interface SwipeableRowProps {
   onEdit: () => void;
   onDelete: () => void;
   children: ReactNode;
+  /** Accessible labels (SDD 07: templates rows are "alimento", not "producto"). */
+  editLabel?: string;
+  deleteLabel?: string;
 }
 
 /**
  * List row with Material-style actions (SDD 06):
  *  - touch devices: swipe left reveals Edit/Delete behind the row
  *  - desktop (hover-capable): no swipe; the actions appear on hover/focus
- * This is the shared pattern for every future list (history, templates…).
+ * This is the shared pattern for every list (products, templates…).
  */
 export function SwipeableRow({
   open,
@@ -48,6 +51,8 @@ export function SwipeableRow({
   onEdit,
   onDelete,
   children,
+  editLabel = "Editar producto",
+  deleteLabel = "Eliminar producto",
 }: SwipeableRowProps) {
   const isDesktop = useIsDesktop();
   const [dragX, setDragX] = useState(0);
@@ -81,7 +86,7 @@ export function SwipeableRow({
           <button
             type="button"
             onClick={onEdit}
-            aria-label="Editar producto"
+            aria-label={editLabel}
             title="Editar"
             className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20"
           >
@@ -90,7 +95,7 @@ export function SwipeableRow({
           <button
             type="button"
             onClick={onDelete}
-            aria-label="Eliminar producto"
+            aria-label={deleteLabel}
             title="Eliminar"
             className="flex size-10 items-center justify-center rounded-full bg-destructive/10 text-destructive transition-colors hover:bg-destructive/20"
           >
@@ -112,7 +117,7 @@ export function SwipeableRow({
           type="button"
           onFocus={() => onOpenChange(true)}
           onClick={onEdit}
-          aria-label="Editar producto"
+          aria-label={editLabel}
           className="flex w-[88px] flex-col items-center justify-center gap-1 bg-primary text-on-primary"
         >
           <Pencil className="size-5" aria-hidden />
@@ -124,7 +129,7 @@ export function SwipeableRow({
           type="button"
           onFocus={() => onOpenChange(true)}
           onClick={onDelete}
-          aria-label="Eliminar producto"
+          aria-label={deleteLabel}
           className="flex w-[88px] flex-col items-center justify-center gap-1 bg-destructive text-destructive-foreground"
         >
           <Trash2 className="size-5" aria-hidden />

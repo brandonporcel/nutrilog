@@ -22,7 +22,8 @@ export async function proxy(request: NextRequest) {
   const isProtected =
     protectedPaths.includes(pathname) ||
     pathname === "/products" ||
-    pathname.startsWith("/products/");
+    pathname.startsWith("/products/") ||
+    pathname.startsWith("/templates/");
   if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

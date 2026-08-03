@@ -22,8 +22,9 @@ import { toast } from "@/lib/ui/toast-store";
  *
  * Triggers live in use-sync-triggers.ts (including a periodic retry);
  * writes call scheduleSync(). TABLES order follows FK dependencies
- * (products reference units, categories and brands) so pushed rows never
- * violate foreign keys on a first pass.
+ * (products reference units, categories and brands; template_items reference
+ * templates and products) so pushed rows never violate foreign keys on a
+ * first pass.
  */
 
 const TABLES = {
@@ -31,6 +32,8 @@ const TABLES = {
   categories: db.categories,
   brands: db.brands,
   products: db.products,
+  templates: db.templates,
+  template_items: db.template_items,
 } as const;
 
 type SyncableTable = keyof typeof TABLES;
