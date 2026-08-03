@@ -10,7 +10,8 @@ import { AppHeader } from "@/components/shell/header";
 const SCREENS: Record<string, { title: string; fab?: string; back?: string }> = {
   "/dashboard": { title: "Inicio" },
   "/history": { title: "Histórico" },
-  "/templates": { title: "Modelos" },
+  "/templates": { title: "Modelos", fab: "/templates/new" },
+  "/templates/new": { title: "Nueva plantilla", back: "/templates" },
   "/products": { title: "Productos", fab: "/products/new" },
   "/products/new": { title: "Nuevo producto", back: "/products" },
   "/units": { title: "Unidades" },
@@ -22,12 +23,17 @@ interface ScreenConfig {
   back?: string;
 }
 
-/** Resolves static routes plus dynamic /products/[id] and /products/[id]/edit. */
+/**
+ * Resolves static routes plus the dynamic product and template screens
+ * (/products/[id], /products/[id]/edit, /templates/[id]/edit).
+ */
 function getScreen(pathname: string): ScreenConfig | undefined {
-  const edit = pathname.match(/^\/products\/([^/]+)\/edit$/);
-  if (edit) return { title: "Editar", back: `/products/${edit[1]}` };
-  const detail = pathname.match(/^\/products\/([^/]+)$/);
-  if (detail) return { title: "Detalle", back: "/products" };
+  const templateEdit = pathname.match(/^\/templates\/([^/]+)\/edit$/);
+  if (templateEdit) return { title: "Editar plantilla", back: "/templates" };
+  const productEdit = pathname.match(/^\/products\/([^/]+)\/edit$/);
+  if (productEdit) return { title: "Editar", back: `/products/${productEdit[1]}` };
+  const productDetail = pathname.match(/^\/products\/([^/]+)$/);
+  if (productDetail) return { title: "Detalle", back: "/products" };
   return SCREENS[pathname];
 }
 

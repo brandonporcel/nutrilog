@@ -1,0 +1,247 @@
+<!DOCTYPE html><html class="light" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NutriLog - Editar Modelo</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#ef9900",
+                    "outline-variant": "#bccbb9",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#006e2f",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed-variant": "#005321",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#4ae176",
+                    "inverse-surface": "#213145",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#3d4a3d",
+                    "surface-container-high": "#dce9ff",
+                    "on-primary-fixed": "#002109",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#4ae176",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-variant": "#d3e4fe",
+                    "secondary-fixed": "#a6f4b5",
+                    "secondary": "#1f6c3a",
+                    "on-surface": "#0b1c30",
+                    "on-secondary-container": "#24703e",
+                    "surface-container-highest": "#d3e4fe",
+                    "surface": "#f8f9ff",
+                    "tertiary-fixed": "#ffddb8",
+                    "tertiary": "#855300",
+                    "surface-container": "#e5eeff",
+                    "on-secondary-fixed-variant": "#005226",
+                    "primary-fixed": "#6bff8f",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#5c3800",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "surface-container-low": "#eff4ff",
+                    "surface-dim": "#cbdbf5",
+                    "secondary-container": "#a4f1b2",
+                    "primary-container": "#22c55e",
+                    "outline": "#6d7b6c",
+                    "surface-bright": "#f8f9ff",
+                    "error": "#ba1a1a",
+                    "background": "#f8f9ff",
+                    "on-background": "#0b1c30",
+                    "primary": "#006e2f",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-secondary-fixed": "#00210b",
+                    "on-primary-container": "#004b1e",
+                    "secondary-fixed-dim": "#8bd79b",
+                    "on-tertiary-fixed": "#2a1700"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "margin-mobile": "16px",
+                    "touch-target-min": "48px",
+                    "margin-desktop": "24px",
+                    "gutter": "12px",
+                    "list-item-gap": "8px"
+            },
+            "fontFamily": {
+                    "body-sm-dense": ["Inter"],
+                    "title-md": ["Inter"],
+                    "display-protein": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "numeric-data": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "body-sm-dense": ["14px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "display-protein": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "numeric-data": ["16px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ios-scroll-snap {
+            scroll-snap-type: y mandatory;
+        }
+        .ios-scroll-snap > * {
+            scroll-snap-align: start;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min max-w-[768px]">
+<div class="flex items-center gap-4">
+<button class="text-primary hover:bg-surface-container-low p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md font-bold text-primary dark:text-primary-fixed">Editar Modelo</h1>
+</div>
+<button class="font-label-caps text-label-caps text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low px-3 py-1 rounded">
+            CANCELAR
+        </button>
+</header>
+<!-- Main Content -->
+<main class="w-full max-w-[768px] pt-16 pb-24 px-margin-mobile flex flex-col gap-6">
+<!-- Template Name Input Section -->
+<section class="mt-4">
+<label class="font-label-caps text-label-caps text-primary mb-2 block">NOME DO MODELO</label>
+<input class="w-full h-touch-target-min bg-surface border border-outline-variant rounded-lg px-4 font-body-lg text-body-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Ex: Pós-treino" type="text" value="Meu Café da Manhã">
+</section>
+<!-- Progress Overview (Micro-Hero) -->
+<section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 flex flex-col gap-3">
+<div class="flex justify-between items-end">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant">TOTAL DE PROTEÍNA</p>
+<p class="font-display-protein text-[32px] text-primary">42<span class="text-title-md font-normal ml-1">g</span></p>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant">CALORIAS</p>
+<p class="font-numeric-data text-body-lg">540 kcal</p>
+</div>
+</div>
+<div class="h-3 w-full bg-primary/20 rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-[75%] rounded-full"></div>
+</div>
+</section>
+<!-- Selected Products List -->
+<section class="flex flex-col gap-list-item-gap">
+<div class="flex justify-between items-center mb-1">
+<h2 class="font-label-caps text-label-caps text-on-surface-variant">ALIMENTOS SELECIONADOS</h2>
+<span class="font-body-sm-dense text-body-sm-dense text-outline">3 Itens</span>
+</div>
+<!-- List Item: Whey Protein -->
+<div class="bg-white border border-outline-variant rounded-lg flex items-center justify-between p-3 transition-all active:scale-[0.98]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">fitness_center</span>
+</div>
+<div>
+<p class="font-title-md text-[16px] text-on-surface">Whey Protein Isolate</p>
+<p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant">30g • <span class="font-numeric-data text-primary">24g prot</span></p>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-error hover:bg-error-container rounded-full transition-colors">
+<span class="material-symbols-outlined">delete_outline</span>
+</button>
+</div>
+<!-- List Item: Ovos -->
+<div class="bg-white border border-outline-variant rounded-lg flex items-center justify-between p-3 transition-all active:scale-[0.98]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">egg</span>
+</div>
+<div>
+<p class="font-title-md text-[16px] text-on-surface">Ovos Cozidos</p>
+<p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant">2 unidades • <span class="font-numeric-data text-primary">12g prot</span></p>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-error hover:bg-error-container rounded-full transition-colors">
+<span class="material-symbols-outlined">delete_outline</span>
+</button>
+</div>
+<!-- List Item: Aveia -->
+<div class="bg-white border border-outline-variant rounded-lg flex items-center justify-between p-3 transition-all active:scale-[0.98]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-high text-on-surface-variant rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">bakery_dining</span>
+</div>
+<div>
+<p class="font-title-md text-[16px] text-on-surface">Aveia em Flocos</p>
+<p class="font-body-sm-dense text-body-sm-dense text-on-surface-variant">40g • <span class="font-numeric-data text-primary">6g prot</span></p>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-error hover:bg-error-container rounded-full transition-colors">
+<span class="material-symbols-outlined">delete_outline</span>
+</button>
+</div>
+<!-- Add More Button -->
+<button class="mt-4 flex items-center justify-center gap-2 w-full h-touch-target-min border-2 border-dashed border-primary/30 text-primary rounded-xl font-title-md text-[16px] hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+                Adicionar Alimento
+            </button>
+</section>
+<!-- Visual Anchor: Contextual Graphic -->
+<section class="mt-4 opacity-80 flex flex-col items-center">
+<div class="w-full h-32 rounded-2xl overflow-hidden relative border border-outline-variant/30">
+<div class="w-full h-full bg-cover bg-center" data-alt="A clinical and high-end close-up shot of a minimalist breakfast scene featuring a glass bowl of oats, two boiled eggs, and a protein shaker on a pristine white marble surface. The lighting is bright and airy, using soft morning sunlight that creates clean shadows. The aesthetic is modern corporate and disciplined, reflecting a professional health-tracking app interface." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA4tKazOM2JlicmiU6UTKF4ZA6cijirvajzuUEBomPvfUp7WtYvJligrxO-oFYmyrpUt4eU9SmO9-m4VWsyoZDcbky76XPNBP8NTPGC3VgdswnG-BG7rtjaJCdQV8WLmnpdzF38cmglrjn7Ie3ELc0jEcUwsWaWJz_vM5LBEnS2E4D1b7J8gPpvXral_5ZZD_uMKFq7kghQMn1l4_c3iD8byToT6XiNF87b5yE4NMM6UfUg5dTQN5_Xlw')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+</div>
+<p class="text-center font-body-sm-dense text-body-sm-dense text-on-surface-variant mt-2 px-8">Personalize seus modelos para agilizar o registro diário.</p>
+</section>
+</main>
+<!-- Bottom Action Area -->
+<div class="fixed bottom-0 w-full max-w-[768px] bg-surface/80 backdrop-blur-md p-margin-mobile border-t border-outline-variant flex flex-col gap-2 z-50">
+<button class="w-full h-[56px] bg-primary text-on-primary rounded-full font-title-md text-title-md shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+            Salvar Modelo
+        </button>
+</div>
+<!-- Simple Interaction Script -->
+<script>
+        // Micro-interaction for the "Delete" buttons
+        document.querySelectorAll('button.text-error').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('.bg-white');
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    row.remove();
+                }, 300);
+            });
+        });
+
+        // Feedback on Add button
+        document.querySelector('button.border-dashed').addEventListener('click', () => {
+            console.log('Open search/add food flow');
+            // Mock interaction feedback
+        });
+    </script>
+</body></html>
