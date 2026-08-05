@@ -27,7 +27,7 @@ Estado: ✅ Aprobado
 - **Selector de producto: Sheet (drawer) de dos pasos** — paso 1: búsqueda + lista de productos; paso 2: cantidad con stepper + chips ½/1/2/3 + personalizado + hero estimado (proteína/calorías). El draft de la plantilla vive en el estado local del editor → el drawer nunca pierde contexto y no hay estado global ni query params. La **pantalla full-screen con numpad de `add-product/code.html` se implementa en el Epic 2** (registro diario), donde el numpad full-screen tiene sentido; hoy sería un doble trabajo sin uso real (los templates se editan con pocos items).
 - **Editar cantidad: tap en el item** → mismo paso 2 pre-cargado (la pantalla de cantidad es la misma, sea agregar o editar).
 - **Eliminar item: `SwipeableRow`** (Editar/Eliminar), consistente con productos (el SDD 06 ya anotó "swipe en otras listas (templates)" como siguiente paso). El diseño Stitch muestra un delete directo; se prioriza la consistencia de la app y el patrón ya existente.
-- **Tap en una plantilla del listado → navega a su edición por ahora.** Cuando llegue el Epic 2, el tap pasa a "aplicar al log" (Caso 4) y la edición se mueve a una acción secundaria.
+- **Tap en una plantilla del listado → navega a su edición por ahora.** El acceso a "aplicar al log" vive dentro de Nueva comida (tab Plantillas del selector, SDD 08); el tap directo en el listado queda fuera de alcance.
 - **Micro-hero del editor: proteína total + calorías, sin barra de progreso** — la meta diaria no existe aún; una barra sin referencia sería decorativa.
 - **Avatar de plantilla: icono fijo** (`restaurant_menu`) — `templates` no tiene campo `icon`; el diseño usa iconos decorativos distintos por template. Cuando exista el CRUD de plantillas/categorías se puede agregar.
 - **Guardado sin diffs**: `save`/`update` reciben el template con la lista **completa** de items y reemplazan (transacción Dexie). Simple, last-write-wins, coherente con el sync.
@@ -133,4 +133,5 @@ El usuario definió el flujo futuro (para no perderlo):
 - Tocar una plantilla NO guarda nada automáticamente: abre **"Nueva comida"** con los productos precargados (icono, nombre, cantidad, proteínas, calorías, editar, eliminar).
 - Desde allí: editar cantidades, eliminar, agregar o reemplazar productos — todo antes de guardar la comida.
 - Pantalla "Nueva comida": header (Cancelar / título), card de resumen (meta diaria, proteína consumida, proteína que aportará la comida), listado de alimentos, "+ Añadir alimento" (vuelve a la misma comida, nunca pierde contexto), resumen final (proteína total, calorías totales), botón "Guardar comida".
-- Implicación de diseño: el listado de templates hoy navega al editor; en el Epic 2 el tap pasará a abrir "Nueva comida" con el template precargado.
+
+**Implementado en el SDD 08** (registro diario): el acceso a plantillas vive dentro de "Nueva comida" (tab Plantillas del selector, `AddItemSheet`); elegir una plantilla precarga sus items en el carrito. Queda fuera del alcance el acceso directo tocando una plantilla en el listado de `/templates` (el tap sigue navegando a la edición).

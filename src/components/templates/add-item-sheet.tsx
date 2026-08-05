@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowLeft, Check, Minus, PackageSearch, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  LayoutTemplate,
+  Minus,
+  PackageSearch,
+  Plus,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,10 +19,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { CategoryIcon } from "@/lib/icons/category-icon";
+import { dailyLogRepository } from "@/lib/repositories/daily-log";
 import {
   productsRepository,
   type ProductListItem,
 } from "@/lib/repositories/products";
+import { type TemplateSummary } from "@/lib/repositories/templates";
 import { createClient } from "@/lib/supabase/client";
 
 /** Accepts both "." and "," decimal separators; clamps to a positive value. */
@@ -45,24 +54,33 @@ interface AddItemSheetProps {
   onItemChange: (result: AddItemResult) => void;
   /** When set, the sheet opens on the quantity step for this existing item. */
   editing?: { product_id: string; quantity: number } | null;
+  /** When provided, the pick step shows a Plantillas tab (SDD 08). */
+  templates?: TemplateSummary[];
+  /** Template picked from the tab; the editor loads all its items. */
+  onTemplatePick?: (template: TemplateSummary) => void;
 }
 
 /**
- * Product picker for template items (SDD 07), a two-step bottom sheet:
- *  1) search + list of products, 2) quantity stepper with quick chips.
- * It lives inside the editor so the draft never loses context; the
- * full-screen numpad from the Stitch design arrives with the daily log
- * (Epic 2), where it belongs.
+ * Product picker for template items (SDD 07) and daily meals (SDD 08):
+ * a two-step bottom sheet — 1) search + list of products (or templates),
+ * 2) quantity stepper with quick chips. It lives inside the editor so the
+ * draft never loses context.
  */
 export function AddItemSheet({
   open,
   onOpenChange,
   onItemChange,
   editing,
+  templates,
+  onTemplatePick,
 }: AddItemSheetProps) {
   const [products, setProducts] = useState<ProductListItem[]>([]);
+  const [frequentIds, setFrequentIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState<"frequent" | "products" | "templates">(
+    "frequent"
+  );
   const [step, setStep] = useState<"pick" | "amount">("pick");
   const [selected, setSelected] = useState<ProductListItem | null>(null);
   const [quantity, setQuantity] = useState("1");
@@ -75,6 +93,7 @@ export function AddItemSheet({
       setLoading(true);
       if (!editing) {
         setStep("pick");
+        setTab("frequent");
         setSelected(null);
         setQuantity("1");
         setQuery("");
@@ -82,10 +101,18 @@ export function AddItemSheet({
       const { data } = await createClient().auth.getSession();
       const userId = data.session?.user.id;
       if (!userId || cancelled) return;
-      const list = await productsRepository.getListItems(userId);
+      const [list, frequent] = await Promise.all([
+        productsRepository.getListItems(userId),
+        dailyLogRepository.getFrequentProductIds(userId, 10),
+      ]);
       if (cancelled) return;
       setProducts(list);
+      setFrequentIds(frequent);
       setLoading(false);
+
+      // Without frequent products the Frecuentes tab would be empty: land
+      // on the full catalog instead (still user-switchable).
+      if (!editing && frequent.length === 0) setTab("products");
 
       // Edit mode: jump straight to the quantity step for that product.
       if (editing) {
@@ -101,6 +128,21 @@ export function AddItemSheet({
       cancelled = true;
     };
   }, [open, editing]);
+
+  const hasTemplatesTab = templates !== undefined && onTemplatePick !== undefined;
+
+  const frequentProducts = useMemo(
+    () =>
+      frequentIds
+        .map((id) => products.find((product) => product.id === id))
+        .filter((product): product is ProductListItem => product !== undefined),
+    [frequentIds, products]
+  );
+
+  function pickTemplate(template: TemplateSummary) {
+    onTemplatePick?.(template);
+    onOpenChange(false);
+  }
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -148,72 +190,190 @@ export function AddItemSheet({
             </button>
           )}
           <SheetTitle className="text-center font-title-md text-on-surface">
-            {step === "pick" ? "Buscar alimento" : selected?.name}
+            {step === "pick" ? "Agregar a la comida" : selected?.name}
           </SheetTitle>
           <SheetDescription className="sr-only">
             {step === "pick"
-              ? "Elegí un producto de tu lista para agregarlo a la plantilla."
+              ? "Elegí un producto o una plantilla para agregarlo a la comida."
               : "Elegí la cantidad y confirmá."}
           </SheetDescription>
         </SheetHeader>
 
         {step === "pick" ? (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="relative px-4 pb-2 pt-3">
-              <div className="pointer-events-none absolute inset-y-0 left-0 ml-7 flex items-center">
-                <PackageSearch className="size-5 text-on-surface-variant" aria-hidden />
-              </div>
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar productos…"
-                aria-label="Buscar productos"
-                autoFocus
-                className="block h-touch-target-min w-full rounded-xl border border-outline-variant bg-surface-container pl-10 pr-3 text-body-lg text-on-surface outline-none transition-all placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+            <div className="flex justify-center gap-2 px-4 pb-1 pt-3">
+              <button
+                type="button"
+                onClick={() => setTab("frequent")}
+                className={
+                  tab === "frequent"
+                    ? "flex-none rounded-full border border-primary bg-primary-container px-5 py-1.5 text-label-caps text-on-primary-container"
+                    : "flex-none rounded-full border border-outline-variant px-5 py-1.5 text-label-caps text-on-surface-variant transition-colors hover:bg-surface-container-low"
+                }
+              >
+                FRECUENTES
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("products")}
+                className={
+                  tab === "products"
+                    ? "flex-none rounded-full border border-primary bg-primary-container px-5 py-1.5 text-label-caps text-on-primary-container"
+                    : "flex-none rounded-full border border-outline-variant px-5 py-1.5 text-label-caps text-on-surface-variant transition-colors hover:bg-surface-container-low"
+                }
+              >
+                ALIMENTOS
+              </button>
+              {hasTemplatesTab && (
+                <button
+                  type="button"
+                  onClick={() => setTab("templates")}
+                  className={
+                    tab === "templates"
+                      ? "flex-none rounded-full border border-primary bg-primary-container px-5 py-1.5 text-label-caps text-on-primary-container"
+                      : "flex-none rounded-full border border-outline-variant px-5 py-1.5 text-label-caps text-on-surface-variant transition-colors hover:bg-surface-container-low"
+                  }
+                >
+                  PLANTILLAS
+                </button>
+              )}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
-              {loading && (
-                <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
-                  Cargando…
-                </p>
-              )}
-              {!loading && filtered.length === 0 && (
-                <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
-                  {query.trim()
-                    ? `Sin resultados para “${query.trim()}”.`
-                    : "Todavía no tenés productos."}
-                </p>
-              )}
-              {!loading &&
-                filtered.map((product) => (
-                  <button
-                    key={product.id}
-                    type="button"
-                    onClick={() => pickProduct(product)}
-                    className="flex w-full items-center rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low active:bg-surface-container"
-                  >
-                    <div className="mr-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
-                      <CategoryIcon
-                        icon={product.category_icon}
-                        className="size-5"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-grow">
-                      <p className="truncate text-body-lg font-semibold text-on-surface">
-                        {product.name}
-                      </p>
-                      <p className="truncate text-body-sm-dense text-on-surface-variant">
-                        {product.brand_name ?? "Sin marca"} ·{" "}
-                        <span className="text-primary">
-                          {product.protein} g prot
-                        </span>
-                      </p>
-                    </div>
-                  </button>
-                ))}
-            </div>
+            {tab === "frequent" ? (
+              <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2 pt-2">
+                {loading && (
+                  <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
+                    Cargando…
+                  </p>
+                )}
+                {!loading && frequentProducts.length === 0 && (
+                  <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
+                    Todavía no tenés alimentos frecuentes. Registrá comidas y
+                    tus alimentos más usados aparecen acá.
+                  </p>
+                )}
+                {!loading &&
+                  frequentProducts.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => pickProduct(product)}
+                      className="flex w-full items-center rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low active:bg-surface-container"
+                    >
+                      <div className="mr-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
+                        <CategoryIcon
+                          icon={product.category_icon}
+                          className="size-5"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-grow">
+                        <p className="truncate text-body-lg font-semibold text-on-surface">
+                          {product.name}
+                        </p>
+                        <p className="truncate text-body-sm-dense text-on-surface-variant">
+                          {product.brand_name ?? "Sin marca"} ·{" "}
+                          <span className="text-primary">
+                            {product.protein} g prot
+                          </span>
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+              </div>
+            ) : tab === "products" ? (
+              <>
+                <div className="relative px-4 pb-2 pt-3">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 ml-7 flex items-center">
+                    <PackageSearch className="size-5 text-on-surface-variant" aria-hidden />
+                  </div>
+                  <input
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Buscar productos…"
+                    aria-label="Buscar productos"
+                    autoFocus
+                    className="block h-touch-target-min w-full rounded-xl border border-outline-variant bg-surface-container pl-10 pr-3 text-body-lg text-on-surface outline-none transition-all placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
+                  {loading && (
+                    <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
+                      Cargando…
+                    </p>
+                  )}
+                  {!loading && filtered.length === 0 && (
+                    <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
+                      {query.trim()
+                        ? `Sin resultados para “${query.trim()}”.`
+                        : "Todavía no tenés productos."}
+                    </p>
+                  )}
+                  {!loading &&
+                    filtered.map((product) => (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => pickProduct(product)}
+                        className="flex w-full items-center rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low active:bg-surface-container"
+                      >
+                        <div className="mr-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
+                          <CategoryIcon
+                            icon={product.category_icon}
+                            className="size-5"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-grow">
+                          <p className="truncate text-body-lg font-semibold text-on-surface">
+                            {product.name}
+                          </p>
+                          <p className="truncate text-body-sm-dense text-on-surface-variant">
+                            {product.brand_name ?? "Sin marca"} ·{" "}
+                            <span className="text-primary">
+                              {product.protein} g prot
+                            </span>
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </>
+            ) : (
+              <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2 pt-2">
+                {templates && templates.length === 0 ? (
+                  <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
+                    Todavía no tenés plantillas. Podés crearlas desde la
+                    pestaña Modelos.
+                  </p>
+                ) : (
+                  templates?.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => pickTemplate(template)}
+                      className="flex w-full items-center rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low active:bg-surface-container"
+                    >
+                      <div className="mr-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
+                        <LayoutTemplate className="size-5" aria-hidden />
+                      </div>
+                      <div className="min-w-0 flex-grow">
+                        <p className="truncate text-body-lg font-semibold text-on-surface">
+                          {template.name}
+                        </p>
+                        <p className="truncate text-body-sm-dense text-on-surface-variant">
+                          {template.item_count === 0
+                            ? "Sin alimentos"
+                            : template.preview}
+                        </p>
+                      </div>
+                      <span className="ml-4 flex-shrink-0 text-numeric-data text-primary">
+                        ≈ {template.protein_total} g
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         ) : (
           selected && (
