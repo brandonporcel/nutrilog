@@ -64,6 +64,8 @@ export interface DailyLogItem extends SyncEntity {
   daily_log_id: string;
   product_id: string;
   quantity: number;
+  /** Groups items into a meal (all items saved together share one id). */
+  meal_id: string | null;
   // Snapshot nutricional: el historial no cambia aunque el producto cambie.
   protein: number;
   carbs: number;
@@ -108,6 +110,14 @@ db.version(1).stores({
 db.version(2).stores({
   templates: "id, user_id, updated_at, [id+user_id]",
   template_items: "id, user_id, updated_at, template_id, [template_id+user_id]",
+});
+
+// v3: daily log reads (SDD 08) — today's log by (user_id, date), items by
+// daily_log_id or meal_id, and today's items by (user_id, created_at range).
+db.version(3).stores({
+  daily_logs: "id, user_id, date, updated_at, [id+user_id], [user_id+date]",
+  daily_log_items:
+    "id, user_id, updated_at, daily_log_id, meal_id, [user_id+created_at]",
 });
 
 export { db };

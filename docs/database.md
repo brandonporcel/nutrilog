@@ -209,6 +209,8 @@ Existe un único registro por día y por usuario.
 
 Constraint único: (user_id, date).
 
+`date` es la fecha **local del usuario** (YYYY-MM-DD, calculada en el navegador): el límite del día es del usuario, no UTC. `created_at`/`updated_at` siguen siendo UTC.
+
 Ejemplo:
 
 2026-08-01
@@ -224,6 +226,8 @@ Cada registro almacena:
 - producto
 - cantidad consumida
 - snapshot nutricional
+
+`meal_id` (uuid, nullable) agrupa los items de una misma comida: todos los items guardados juntos comparten el mismo id. La comida en sí no tiene tabla propia ni nombre persistido — el nombre (Desayuno/Almuerzo/Merienda/Cena) se deriva de la hora local del primer item (SDD 08).
 
 Los snapshots solo existen en Daily Log Items.
 

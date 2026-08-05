@@ -23,7 +23,8 @@ export async function proxy(request: NextRequest) {
     protectedPaths.includes(pathname) ||
     pathname === "/products" ||
     pathname.startsWith("/products/") ||
-    pathname.startsWith("/templates/");
+    pathname.startsWith("/templates/") ||
+    pathname.startsWith("/meals/");
   if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

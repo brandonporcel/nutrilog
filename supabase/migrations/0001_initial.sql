@@ -103,6 +103,9 @@ create table if not exists public.daily_log_items (
   daily_log_id uuid not null references public.daily_logs (id) on delete cascade,
   product_id uuid not null references public.products (id) on delete cascade,
   quantity numeric not null default 1,
+  -- Groups items into a meal (all items saved together share one id); null
+  -- for rows created before SDD 08.
+  meal_id uuid,
   protein numeric not null default 0,
   carbs numeric not null default 0,
   fat numeric not null default 0,
@@ -114,6 +117,11 @@ create table if not exists public.daily_log_items (
   updated_at timestamptz not null default now(),
   deleted_at timestamptz
 );
+
+-- SDD 08: meal grouping on existing installs (idempotent re-run).
+alter table public.daily_log_items add column if not exists meal_id uuid;
+create index if not exists daily_log_items_meal_id_idx
+  on public.daily_log_items (meal_id);
 
 -- Row Level Security: every table is scoped to its owner.
 -- The DO block is idempotent (drop policy if exists) so this file can be
