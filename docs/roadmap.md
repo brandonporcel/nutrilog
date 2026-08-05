@@ -70,13 +70,13 @@ El usuario puede registrar cualquier alimento personalizado.
 
 Estado
 
-⬜ Pendiente
+🚧 En progreso (Home con meta de proteína y listado de comidas del día + flujo "Nueva comida" con agregar por producto o plantilla, SDD 08 ✅; pendiente: histórico, editar/eliminar comidas guardadas)
 
 Objetivos
 
-- Crear registro diario
-- Agregar alimento
-- Editar alimento
+- Crear registro diario ✅ (guardar comida → snapshot + agrupación por meal_id)
+- Agregar alimento ✅ (por unidades o gramos, con edición de cantidad)
+- Editar alimento ✅ (en el carrito de "Nueva comida")
 - Eliminar alimento
 - Historial por día
 
@@ -109,14 +109,14 @@ El usuario puede saber rápidamente si alcanzó su objetivo.
 
 Estado
 
-🚧 En progreso (crear, listar, editar y eliminar plantillas, SDD 07 ✅; pendiente: duplicar plantillas y aplicar plantilla al día — esto último depende del registro diario, Epic 2)
+🚧 En progreso (crear, listar, editar y eliminar plantillas, SDD 07 ✅; pendiente: duplicar plantillas)
 
 Objetivos
 
 - Crear comidas frecuentes ✅
 - Editar plantillas ✅
 - Duplicar plantillas
-- Agregar plantilla al día (→ Epic 2: tocar una plantilla abre "Nueva comida" con los productos precargados)
+- Agregar plantilla al día ✅ (desde "Nueva comida", tab Plantillas — SDD 08; las plantillas son un punto de partida, no comidas cerradas)
 
 Resultado esperado
 

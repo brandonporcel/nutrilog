@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NutriLog - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#ef9900",
+                        "outline-variant": "#bccbb9",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#006e2f",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#005321",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#4ae176",
+                        "inverse-surface": "#213145",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#3d4a3d",
+                        "surface-container-high": "#dce9ff",
+                        "on-primary-fixed": "#002109",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#4ae176",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-variant": "#d3e4fe",
+                        "secondary-fixed": "#a6f4b5",
+                        "secondary": "#1f6c3a",
+                        "on-surface": "#0b1c30",
+                        "on-secondary-container": "#24703e",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface": "#f8f9ff",
+                        "tertiary-fixed": "#ffddb8",
+                        "tertiary": "#855300",
+                        "surface-container": "#e5eeff",
+                        "on-secondary-fixed-variant": "#005226",
+                        "primary-fixed": "#6bff8f",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#5c3800",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-low": "#eff4ff",
+                        "surface-dim": "#cbdbf5",
+                        "secondary-container": "#a4f1b2",
+                        "primary-container": "#22c55e",
+                        "outline": "#6d7b6c",
+                        "surface-bright": "#f8f9ff",
+                        "error": "#ba1a1a",
+                        "background": "#f8f9ff",
+                        "on-background": "#0b1c30",
+                        "primary": "#006e2f",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-secondary-fixed": "#00210b",
+                        "on-primary-container": "#004b1e",
+                        "secondary-fixed-dim": "#8bd79b",
+                        "on-tertiary-fixed": "#2a1700"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "touch-target-min": "48px",
+                        "margin-desktop": "24px",
+                        "gutter": "12px",
+                        "list-item-gap": "8px"
+                    },
+                    "fontFamily": {
+                        "body-sm-dense": ["Inter"],
+                        "title-md": ["Inter"],
+                        "display-protein": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "numeric-data": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm-dense": ["14px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "display-protein": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "numeric-data": ["16px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            user-select: none;
+        }
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center">
+<!-- TopAppBar -->
+<header class="bg-surface border-b border-outline-variant fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min max-w-[768px]">
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-title-md text-title-md font-bold text-primary">NutriLog</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">JULHO 2026</span>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+</button>
+</div>
+</header>
+<!-- Content Area -->
+<main class="w-full max-w-[768px] pt-[48px] pb-[80px] px-margin-mobile flex flex-col gap-gutter">
+<!-- Hero Protein Metric (Progress Header) -->
+<section class="mt-4 p-5 bg-white rounded-xl border border-outline-variant shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Proteína Diária</span>
+<div class="flex items-baseline gap-1">
+<span class="font-display-protein text-display-protein text-primary">82</span>
+<span class="font-title-md text-title-md text-on-surface-variant">/ 133g</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-numeric-data text-numeric-data text-primary">62%</span>
+</div>
+</div>
+<div class="w-full h-3 bg-primary/20 rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 62%;"></div>
+</div>
+</section><div class="grid grid-cols-2 gap-4">
+<div class="p-4 bg-surface-container-high rounded-xl flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-primary">MÉDIA SEMANAL</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">128g</span>
+<span class="font-body-sm-dense text-body-sm-dense text-green-700 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> +12%
+                    </span>
+</div>
+<div class="p-4 bg-white border border-outline-variant rounded-xl flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">META RESTANTE</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">51g</span>
+<div class="w-full h-1 bg-primary/10 rounded-full">
+<div class="h-full bg-primary w-2/3 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Quick Add Chips -->
+<!-- History List (High Density) -->
+<div class="flex flex-col gap-4">
+<!-- Today Group -->
+<div class="flex flex-col">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant mb-1">
+<h2 class="font-title-md text-title-md text-on-surface font-bold">Hoje</h2>
+<span class="font-label-caps text-label-caps text-on-surface-variant">TOTAL: 98g</span>
+</div>
+<!-- Almoço Entry -->
+<div class="flex flex-col py-list-item-gap">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container text-[20px]">restaurant</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Almoço</span>
+<span class="font-body-sm-dense text-body-sm-dense text-on-surface-variant">Frango, Arroz, Feijão</span>
+</div>
+</div>
+<span class="font-numeric-data text-numeric-data text-primary">42g</span>
+</div>
+</div>
+<div class="h-px bg-outline-variant/30 w-full"></div>
+<!-- Café da Manhã Entry -->
+<div class="flex flex-col py-list-item-gap">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary text-[20px]">coffee</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Café da Manhã</span>
+<span class="font-body-sm-dense text-body-sm-dense text-on-surface-variant">3 Ovos, Pão Integral</span>
+</div>
+</div>
+<span class="font-numeric-data text-numeric-data text-primary">56g</span>
+</div>
+</div>
+</div>
+<!-- Yesterday Group -->
+<div class="flex flex-col opacity-80">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant mb-1">
+<h2 class="font-title-md text-title-md text-on-surface-variant">Ontem</h2>
+<span class="font-label-caps text-label-caps text-on-surface-variant">TOTAL: 142g</span>
+</div>
+<!-- Jantar Entry -->
+<div class="flex flex-col py-list-item-gap">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">dinner_dining</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Jantar</span>
+<span class="font-body-sm-dense text-body-sm-dense text-on-surface-variant">Patinho, Batata Doce</span>
+</div>
+</div>
+<span class="font-numeric-data text-numeric-data text-on-surface-variant">38g</span>
+</div>
+</div>
+<div class="h-px bg-outline-variant/30 w-full"></div>
+<!-- Snack Entry -->
+<div class="flex flex-col py-list-item-gap">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">nutrition</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Lanche Tarde</span>
+<span class="font-body-sm-dense text-body-sm-dense text-on-surface-variant">Shake de Whey</span>
+</div>
+</div>
+<span class="font-numeric-data text-numeric-data text-on-surface-variant">24g</span>
+</div>
+</div>
+</div>
+<!-- Bento Card for Insights -->
+<div class="flex flex-col opacity-60">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant mb-1">
+<h2 class="font-title-md text-title-md text-on-surface-variant">30 Jul - Quarta-feira</h2>
+<span class="font-label-caps text-label-caps text-on-surface-variant">TOTAL: 115g</span>
+</div>
+<div class="flex flex-col py-list-item-gap">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">restaurant</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Almoço</span>
+<span class="font-body-sm-dense text-body-sm-dense text-on-surface-variant">Peixe, Salada, Quinoa</span>
+</div>
+</div>
+<span class="font-numeric-data text-numeric-data text-on-surface-variant">35g</span>
+</div>
+</div>
+</div></div>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-20 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-40">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="bg-surface border-t border-outline-variant fixed bottom-0 w-full z-50 flex justify-around items-center h-16 max-w-[768px] safe-area-bottom">
+<div class="flex flex-col items-center justify-center text-primary font-bold active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-caps text-label-caps">Início</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant active:scale-95 transition-transform cursor-pointer hover:bg-surface-container-low p-1 rounded-lg">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-caps text-label-caps">Histórico</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant active:scale-95 transition-transform cursor-pointer hover:bg-surface-container-low p-1 rounded-lg">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-caps text-label-caps">Modelos</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant active:scale-95 transition-transform cursor-pointer hover:bg-surface-container-low p-1 rounded-lg">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-caps text-label-caps">Produtos</span>
+</div>
+</nav>
+<!-- Micro-interaction script -->
+<script>
+        document.querySelectorAll('nav div, .fab, .chip').forEach(el => {
+            el.addEventListener('click', function() {
+                const ripples = this.querySelectorAll('.ripple');
+                ripples.forEach(r => r.remove());
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body></html>
