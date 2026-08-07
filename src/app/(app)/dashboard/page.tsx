@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, TrendingDown, TrendingUp } from "lucide-react";
+import { ChevronRight, Plus, TrendingDown, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   type TodaySummary,
   type WeeklyAverage,
 } from "@/lib/repositories/daily-log";
+import { ensureUserCatalog } from "@/lib/seeder";
 import { createClient } from "@/lib/supabase/client";
 
 function mealPreview(items: TodaySummary["meals"][number]["items"]): string {
@@ -45,7 +46,12 @@ export default function DashboardPage() {
   }, [userId]);
 
   useEffect(() => {
-    if (userId) void Promise.resolve().then(refresh);
+    if (userId)
+      void Promise.resolve().then(async () => {
+        // Seed the catalog on the first entry point of the app (no-op after).
+        await ensureUserCatalog(userId);
+        await refresh();
+      });
   }, [userId, refresh]);
 
   const goal = DAILY_PROTEIN_GOAL_GRAMS;
@@ -158,28 +164,52 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-col divide-y divide-outline-variant/30">
-            {today.meals.map((meal) => (
-              <div key={meal.meal_id} className="flex flex-col py-list-item-gap">
-                <div className="flex items-center justify-between">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
-                      <MealIcon icon={meal.icon} className="size-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="block truncate text-title-md text-on-surface">
-                        {meal.name}
-                      </span>
-                      <span className="block truncate text-body-sm-dense text-on-surface-variant">
-                        {mealPreview(meal.items)}
-                      </span>
-                    </div>
+            {today.meals.map((meal) => {
+              const row = (
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
+                    <MealIcon icon={meal.icon} className="size-4" />
                   </div>
-                  <span className="ml-3 flex-shrink-0 text-numeric-data text-primary">
-                    {meal.protein_total} g
-                  </span>
+                  <div className="min-w-0">
+                    <span className="block truncate text-title-md text-on-surface">
+                      {meal.name}
+                    </span>
+                    <span className="block truncate text-body-sm-dense text-on-surface-variant">
+                      {mealPreview(meal.items)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+              const protein = (
+                <span className="ml-3 flex flex-shrink-0 items-center gap-1 text-numeric-data text-primary">
+                  {meal.protein_total} g
+                  {meal.meal_id && (
+                    <ChevronRight
+                      className="size-4 text-on-surface-variant"
+                      aria-hidden
+                    />
+                  )}
+                </span>
+              );
+              return (
+                <div key={meal.meal_id} className="flex flex-col py-list-item-gap">
+                  {meal.meal_id ? (
+                    <Link
+                      href={`/meals/${meal.meal_id}`}
+                      className="flex items-center justify-between"
+                    >
+                      {row}
+                      {protein}
+                    </Link>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      {row}
+                      {protein}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

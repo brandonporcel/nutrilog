@@ -25,8 +25,8 @@ interface ScreenConfig {
 }
 
 /**
- * Resolves static routes plus the dynamic product and template screens
- * (/products/[id], /products/[id]/edit, /templates/[id]/edit).
+ * Resolves static routes plus the dynamic product, template and meal screens
+ * (/products/[id], /products/[id]/edit, /templates/[id]/edit, /meals/[id]).
  */
 function getScreen(pathname: string): ScreenConfig | undefined {
   const templateEdit = pathname.match(/^\/templates\/([^/]+)\/edit$/);
@@ -35,6 +35,8 @@ function getScreen(pathname: string): ScreenConfig | undefined {
   if (productEdit) return { title: "Editar", back: `/products/${productEdit[1]}` };
   const productDetail = pathname.match(/^\/products\/([^/]+)$/);
   if (productDetail) return { title: "Detalle", back: "/products" };
+  const mealDetail = pathname.match(/^\/meals\/(?!new$)[^/]+$/);
+  if (mealDetail) return { title: "Detalle", back: "/dashboard" };
   return SCREENS[pathname];
 }
 

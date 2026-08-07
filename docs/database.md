@@ -25,7 +25,7 @@ El objetivo es soportar el MVP sin limitar futuras funcionalidades como:
 - Todas las fechas almacenadas en UTC.
 - Todas las entidades poseen created_at y updated_at.
 - Soft Delete únicamente en entidades sincronizables.
-- Sincronización inicial: last-write-wins basada en updated_at (Epic 5).
+- Sincronización: last-write-wins basada en updated_at (Epic 5).
 
 ---
 
@@ -37,7 +37,7 @@ Todas las entidades pertenecen a un usuario mediante user_id.
 
 No existe un sistema propio de autenticación.
 
-Todas las tablas aplican RLS con políticas por user_id (se implementa junto con el Epic 1).
+Todas las tablas aplican RLS con políticas por user_id (implementadas en la migración inicial).
 
 ---
 
@@ -229,6 +229,8 @@ Cada registro almacena:
 
 `meal_id` (uuid, nullable) agrupa los items de una misma comida: todos los items guardados juntos comparten el mismo id. La comida en sí no tiene tabla propia ni nombre persistido — el nombre (Desayuno/Almuerzo/Merienda/Cena) se deriva de la hora local del primer item (SDD 08).
 
+Cambiar la fecha/hora de una comida (desde el detalle en `/meals/[id]`) re-apunta sus items al `daily_logs` del día destino (creado si no existe) y actualiza su `created_at` al nuevo timestamp local; el `meal_id` nunca cambia. Un log del que se movieron todas las comidas puede quedar vacío (inofensivo: la UI solo lista días con items).
+
 Los snapshots solo existen en Daily Log Items.
 
 Los Template Items no los usan: las plantillas deben reflejar el producto actual.
@@ -309,6 +311,8 @@ Products
 
 # Seeds iniciales
 
+Los seeds se insertan POR USUARIO desde la aplicación (no en la migración SQL): la primera vez que se abre la app, `ensureUserCatalog` (`src/lib/seeder.ts`) crea categorías y unidades si faltan y luego los productos (marcas incluidas, vía `getOrCreateByName`); el sync los sube a Supabase. Los productos se matchean por nombre contra todas las filas (soft-deletes incluidos): un producto que el usuario borró no vuelve a aparecer.
+
 ## Categories
 
 - Huevos (`egg`)
@@ -338,22 +342,26 @@ Products
 
 ---
 
+## Brands
+
+- Bimbo
+- Star Nutrition
+
+---
+
 ## Productos
 
 - Huevo entero
-- Clara
-- Yema
-- Arroz cocido
-- Arroz crudo
-- Papa
-- Batata
 - Banana
+- Manzana
+- Arroz blanco cocido
 - Avena
-- Pollo
-- Atún
-- Leche
-- Pan Integral Bimbo
-- Pan Integral Fargo
+- Pan integral (Bimbo)
+- Pechuga de pollo
+- Atún en lata
+- Shake de proteína (Star Nutrition)
+- Leche descremada
+- Papa
 
 ---
 
