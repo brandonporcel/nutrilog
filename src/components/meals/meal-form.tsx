@@ -1,16 +1,48 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { LayoutTemplate, Plus } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { SwipeableRow } from "@/components/products/swipeable-row";
 import { AddItemSheet } from "@/components/templates/add-item-sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DAILY_PROTEIN_GOAL_GRAMS } from "@/lib/daily-goal";
+import { type Template } from "@/lib/db/database";
 import { CategoryIcon } from "@/lib/icons/category-icon";
 import { type MealItemInput } from "@/lib/repositories/daily-log";
-import { type TemplateSummary, templatesRepository } from "@/lib/repositories/templates";
+import {
+  type TemplateSummary,
+  templatesRepository,
+} from "@/lib/repositories/templates";
+import { toast } from "@/lib/ui/toast-store";
 import { pluralUnit, useDraftItems } from "@/lib/use-draft-items";
+
+const templateNameInputCls =
+  "h-12 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-body-lg text-on-surface outline-none transition-all placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20";
+
+/** Lifts a freshly-saved template into a list row for the Plantillas tab. */
+function toSummary(template: Template, items: { product_name: string; protein: number; calories: number }[], proteinTotal: number, caloriesTotal: number): TemplateSummary {
+  return {
+    ...template,
+    item_count: items.length,
+    protein_total: proteinTotal,
+    calories_total: caloriesTotal,
+    preview: items
+      .slice(0, 3)
+      .map((item) => item.product_name)
+      .join(", "),
+  };
+}
 
 interface MealFormProps {
   userId: string;
@@ -36,6 +68,10 @@ export function MealForm({
 }: MealFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [localTemplates, setLocalTemplates] = useState<TemplateSummary[]>(templates);
   const draft = useDraftItems();
 
   const remaining = Math.max(0, DAILY_PROTEIN_GOAL_GRAMS - consumedToday);
@@ -43,6 +79,46 @@ export function MealForm({
   async function handleTemplatePick(template: TemplateSummary) {
     const detail = await templatesRepository.getDetail(userId, template.id);
     if (detail) draft.addFromTemplate(detail);
+  }
+
+  /** Saves the current cart as a reusable template (SDD 09). */
+  async function handleSaveTemplate() {
+    const name = templateName.trim();
+    if (!name || savingTemplate || draft.items.length === 0) return;
+
+    setSavingTemplate(true);
+    try {
+      const saved = await templatesRepository.save(userId, {
+        name,
+        items: draft.items.map((item) => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+        })),
+      });
+      const summary = toSummary(
+        saved,
+        draft.items.map((item) => ({
+          product_name: item.product_name,
+          protein: item.protein,
+          calories: item.calories,
+        })),
+        draft.totals.protein,
+        draft.totals.calories
+      );
+      setLocalTemplates((current) => [summary, ...current]);
+      setTemplateDialogOpen(false);
+      setTemplateName("");
+      toast("Plantilla guardada");
+    } catch (saveError) {
+      toast(
+        saveError instanceof Error
+          ? saveError.message
+          : "No se pudo guardar la plantilla.",
+        "error"
+      );
+    } finally {
+      setSavingTemplate(false);
+    }
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -76,7 +152,7 @@ export function MealForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-6 px-margin-mobile pb-36 pt-4"
+      className="flex flex-col gap-6 px-margin-mobile pb-44 pt-4"
     >
       {/* Daily summary card */}
       <section className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
@@ -204,6 +280,16 @@ export function MealForm({
           >
             Guardar comida
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setTemplateDialogOpen(true)}
+            disabled={draft.items.length === 0 || savingTemplate}
+            className="h-touch-target-min w-full rounded-full text-title-md"
+          >
+            <LayoutTemplate className="size-5" aria-hidden />
+            Guardar como plantilla
+          </Button>
         </div>
       </footer>
 
@@ -214,9 +300,58 @@ export function MealForm({
           draft.handleItemChange(result, draft.editingItem?.key ?? null)
         }
         editing={draft.editingItem}
-        templates={templates}
+        templates={localTemplates}
         onTemplatePick={handleTemplatePick}
       />
+
+      {/* Save-as-template name dialog */}
+      <AlertDialog
+        open={templateDialogOpen}
+        onOpenChange={(open) => {
+          setTemplateDialogOpen(open);
+          if (!open) setTemplateName("");
+        }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Guardar como plantilla</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta comida queda guardada para reutilizarla en otros días.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-1 px-4 pb-2">
+            <label
+              htmlFor="template-name"
+              className="px-1 text-[10px] font-bold uppercase tracking-wider text-outline"
+            >
+              Nombre de la plantilla
+            </label>
+            <input
+              id="template-name"
+              value={templateName}
+              onChange={(event) => setTemplateName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void handleSaveTemplate();
+                }
+              }}
+              placeholder="Ej: Desayuno"
+              aria-label="Nombre de la plantilla"
+              className={templateNameInputCls}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => void handleSaveTemplate()}
+              disabled={!templateName.trim() || savingTemplate}
+            >
+              Guardar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   );
 }

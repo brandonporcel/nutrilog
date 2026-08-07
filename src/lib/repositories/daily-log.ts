@@ -132,11 +132,17 @@ export const dailyLogRepository = {
       byMeal.set(item.meal_id ?? "", list);
     }
 
+    // Newest meal first: every item of a meal shares one created_at, so the
+    // first item's timestamp is the meal's time.
+    const mealGroups = [...byMeal.entries()].sort((a, b) =>
+      b[1][0].created_at.localeCompare(a[1][0].created_at)
+    );
+
     const meals: Meal[] = [];
     let proteinTotal = 0;
     let caloriesTotal = 0;
 
-    for (const [mealId, mealItems] of byMeal) {
+    for (const [mealId, mealItems] of mealGroups) {
       const { name, icon } = mealKind(mealItems[0].created_at);
       const { protein: mealProtein, calories: mealCalories } = mealTotals(
         mealItems,
@@ -223,13 +229,7 @@ export const dailyLogRepository = {
           meal_id: mealId,
           product_id: item.product_id,
           quantity,
-          protein: round1(quantity * (product?.protein ?? 0)),
-          carbs: round1(quantity * (product?.carbs ?? 0)),
-          fat: round1(quantity * (product?.fat ?? 0)),
-          fiber: round1(quantity * (product?.fiber ?? 0)),
-          calories: Math.round(quantity * (product?.calories ?? 0)),
-          sugars: round1(quantity * (product?.sugars ?? 0)),
-          sodium: round1(quantity * (product?.sodium ?? 0)),
+          ...snapshotFor(product, quantity),
           created_at: timestamp,
           updated_at: timestamp,
           deleted_at: null,
@@ -246,6 +246,9 @@ export const dailyLogRepository = {
   getWeeklyAverage,
   getMeal,
   updateMealTime,
+  updateItem,
+  deleteItem,
+  deleteMeal,
 };
 
 function emptyToday(): TodaySummary {
@@ -348,6 +351,55 @@ async function updateMealTime(
       });
   });
 
+  scheduleSync();
+}
+
+/** Snapshot of the nutritional values for a consumed quantity. */
+function snapshotFor(product: Product | undefined, quantity: number) {
+  return {
+    protein: round1(quantity * (product?.protein ?? 0)),
+    carbs: round1(quantity * (product?.carbs ?? 0)),
+    fat: round1(quantity * (product?.fat ?? 0)),
+    fiber: round1(quantity * (product?.fiber ?? 0)),
+    calories: Math.round(quantity * (product?.calories ?? 0)),
+    sugars: round1(quantity * (product?.sugars ?? 0)),
+    sodium: round1(quantity * (product?.sodium ?? 0)),
+  };
+}
+
+/** Changes an item's quantity and recomputes its snapshot. */
+async function updateItem(
+  userId: string,
+  itemId: string,
+  quantity: number
+): Promise<void> {
+  const item = await db.daily_log_items.get({ id: itemId, user_id: userId });
+  if (!item || item.deleted_at) return;
+
+  const product = await db.products.get(item.product_id);
+  await db.daily_log_items.update(itemId, {
+    quantity,
+    ...snapshotFor(product, quantity),
+    updated_at: now(),
+  });
+  scheduleSync();
+}
+
+/** Soft-deletes a single item of a meal. */
+async function deleteItem(userId: string, itemId: string): Promise<void> {
+  await db.daily_log_items
+    .where({ id: itemId, user_id: userId })
+    .modify({ deleted_at: now(), updated_at: now() });
+  scheduleSync();
+}
+
+/** Soft-deletes every item of a meal (the day log row stays, harmless). */
+async function deleteMeal(userId: string, mealId: string): Promise<void> {
+  await db.daily_log_items
+    .where("meal_id")
+    .equals(mealId)
+    .filter((item) => item.user_id === userId)
+    .modify({ deleted_at: now(), updated_at: now() });
   scheduleSync();
 }
 

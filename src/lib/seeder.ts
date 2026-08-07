@@ -2,6 +2,7 @@ import { db } from "@/lib/db/database";
 import { brandsRepository } from "@/lib/repositories/brands";
 import { categoriesRepository } from "@/lib/repositories/categories";
 import { productsRepository } from "@/lib/repositories/products";
+import { templatesRepository } from "@/lib/repositories/templates";
 import { unitsRepository } from "@/lib/repositories/units";
 
 /**
@@ -179,9 +180,9 @@ const SEED_PRODUCTS: SeedProduct[] = [
 ];
 
 /**
- * Seeds categories, units, brands and products in FK order. Safe to call on
- * every entry point (dashboard, products, new meal): each step is a no-op
- * once its data exists.
+ * Seeds categories, units, brands and products in FK order, then one starter
+ * template. Safe to call on every entry point (dashboard, products, new
+ * meal): each step is a no-op once its data exists.
  */
 export async function ensureUserCatalog(userId: string): Promise<void> {
   await categoriesRepository.ensureSeeds(userId);
@@ -228,4 +229,42 @@ export async function ensureUserCatalog(userId: string): Promise<void> {
       calories: seed.calories,
     });
   }
+
+  await seedStarterTemplate(userId);
+}
+
+/**
+ * One starter template ("Desayuno": 3 huevos + 1 manzana) so a new user
+ * sees a template from day one. Only when the user has NO templates, and
+ * only referencing products that exist (the user may have deleted a seed).
+ */
+async function seedStarterTemplate(userId: string): Promise<void> {
+  const templateCount = await db.templates
+    .where("user_id")
+    .equals(userId)
+    .count();
+  if (templateCount > 0) return;
+
+  const products = await db.products
+    .where("user_id")
+    .equals(userId)
+    .filter((product) => !product.deleted_at)
+    .toArray();
+  const productByName = new Map(
+    products.map((product) => [product.name.trim().toLowerCase(), product])
+  );
+
+  const items = [
+    { name: "Huevo entero", quantity: 3 },
+    { name: "Manzana", quantity: 1 },
+  ]
+    .map(({ name, quantity }) => {
+      const product = productByName.get(name);
+      return product ? { product_id: product.id, quantity } : null;
+    })
+    .filter((item): item is { product_id: string; quantity: number } => item !== null);
+
+  if (items.length === 0) return;
+
+  await templatesRepository.save(userId, { name: "Desayuno", items });
 }
