@@ -14,7 +14,7 @@ export async function proxy(request: NextRequest) {
 
   // Authenticated users do not belong on the auth screens.
   if (user && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/products", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // Protected routes require a session.

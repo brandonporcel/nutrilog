@@ -2,15 +2,28 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { CalendarClock } from "lucide-react";
-import { useEffect, useState } from "react";
+import { CalendarClock, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
+import { SwipeableRow } from "@/components/products/swipeable-row";
+import { AddItemSheet, type AddItemResult } from "@/components/templates/add-item-sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/lib/icons/category-icon";
 import { MealIcon } from "@/lib/icons/meal-icon";
 import {
   dailyLogRepository,
   type MealDetail,
+  type MealItemDetail,
 } from "@/lib/repositories/daily-log";
 import { unitLabel } from "@/lib/repositories/templates";
 import { createClient } from "@/lib/supabase/client";
@@ -38,6 +51,23 @@ export default function MealDetailPage() {
   const [time, setTime] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
+  const [editItem, setEditItem] = useState<MealItemDetail | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [deleteItemTarget, setDeleteItemTarget] =
+    useState<MealItemDetail | null>(null);
+  const [deleteMealOpen, setDeleteMealOpen] = useState(false);
+
+  const reload = useCallback(async (currentUserId: string) => {
+    const detail = await dailyLogRepository.getMeal(currentUserId, params.id);
+    if (detail) {
+      setDate(detail.date);
+      setTime(detail.time);
+    }
+    setMeal(detail);
+    setState(detail ? "found" : "missing");
+  }, [params.id]);
+
   useEffect(() => {
     createClient()
       .auth.getSession()
@@ -45,18 +75,9 @@ export default function MealDetailPage() {
         const currentUserId = data.session?.user.id;
         if (!currentUserId) return;
         setUserId(currentUserId);
-        const detail = await dailyLogRepository.getMeal(
-          currentUserId,
-          params.id
-        );
-        if (detail) {
-          setDate(detail.date);
-          setTime(detail.time);
-        }
-        setMeal(detail);
-        setState(detail ? "found" : "missing");
+        await reload(currentUserId);
       });
-  }, [params.id]);
+  }, [reload]);
 
   async function handleSave() {
     if (!userId || !date || !time || saving) return;
@@ -74,6 +95,30 @@ export default function MealDetailPage() {
     }
   }
 
+  async function handleItemChange(result: AddItemResult) {
+    if (!userId || !editItem) return;
+    await dailyLogRepository.updateItem(userId, editItem.id, result.quantity);
+    setEditItem(null);
+    toast("Cantidad actualizada");
+    await reload(userId);
+  }
+
+  async function handleDeleteItem() {
+    if (!userId || !deleteItemTarget) return;
+    await dailyLogRepository.deleteItem(userId, deleteItemTarget.id);
+    setDeleteItemTarget(null);
+    toast("Alimento eliminado");
+    await reload(userId);
+  }
+
+  async function handleDeleteMeal() {
+    if (!userId) return;
+    await dailyLogRepository.deleteMeal(userId, params.id);
+    setDeleteMealOpen(false);
+    toast("Comida eliminada");
+    router.push("/dashboard");
+  }
+
   if (state === "loading") {
     return (
       <p className="px-margin-mobile py-6 text-body-sm-dense text-on-surface-variant">
@@ -85,9 +130,7 @@ export default function MealDetailPage() {
   if (state === "missing" || !meal) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4 px-margin-mobile text-center">
-        <p className="text-body-lg text-on-surface">
-          Comida no encontrada.
-        </p>
+        <p className="text-body-lg text-on-surface">Comida no encontrada.</p>
         <Link
           href="/dashboard"
           className="text-body-lg text-primary underline-offset-4 hover:underline"
@@ -135,31 +178,48 @@ export default function MealDetailPage() {
         </div>
       </section>
 
-      {/* Items */}
+      {/* Items (swipe left for edit/delete, hover icons on desktop) */}
       <section className="flex flex-col gap-2">
         <h2 className="px-1 text-label-caps uppercase text-on-surface-variant">
           Alimentos
         </h2>
         <div className="flex flex-col divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface">
           {meal.items.map((item) => (
-            <div key={item.id} className="flex items-center px-3 py-3">
-              <div className="mr-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
-                <CategoryIcon icon={item.category_icon} className="size-5" />
+            <SwipeableRow
+              key={item.id}
+              open={openRowId === item.id}
+              onOpenChange={(open) =>
+                setOpenRowId((current) =>
+                  open ? item.id : current === item.id ? null : current
+                )
+              }
+              onEdit={() => {
+                setEditItem(item);
+                setSheetOpen(true);
+              }}
+              onDelete={() => setDeleteItemTarget(item)}
+              editLabel="Editar cantidad"
+              deleteLabel="Eliminar alimento"
+            >
+              <div className="flex items-center px-3 py-3">
+                <div className="mr-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
+                  <CategoryIcon icon={item.category_icon} className="size-5" />
+                </div>
+                <div className="min-w-0 flex-grow">
+                  <p className="truncate text-body-lg font-semibold text-on-surface">
+                    {item.product_name}
+                  </p>
+                  <p className="truncate text-body-sm-dense text-on-surface-variant">
+                    {item.quantity}{" "}
+                    {unitLabel(item.unit_label || undefined)} ·{" "}
+                    <span className="text-primary">{item.protein} g prot</span>
+                  </p>
+                </div>
+                <span className="ml-4 flex-shrink-0 text-numeric-data text-on-surface">
+                  {item.calories} kcal
+                </span>
               </div>
-              <div className="min-w-0 flex-grow">
-                <p className="truncate text-body-lg font-semibold text-on-surface">
-                  {item.product_name}
-                </p>
-                <p className="truncate text-body-sm-dense text-on-surface-variant">
-                  {item.quantity}{" "}
-                  {unitLabel(item.unit_label || undefined)} ·{" "}
-                  <span className="text-primary">{item.protein} g prot</span>
-                </p>
-              </div>
-              <span className="ml-4 flex-shrink-0 text-numeric-data text-on-surface">
-                {item.calories} kcal
-              </span>
-            </div>
+            </SwipeableRow>
           ))}
         </div>
       </section>
@@ -209,6 +269,79 @@ export default function MealDetailPage() {
           </Button>
         </div>
       </section>
+
+      {/* Danger zone */}
+      <section className="flex flex-col gap-2">
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={() => setDeleteMealOpen(true)}
+          className="h-touch-target-min w-full rounded-full text-title-md"
+        >
+          <Trash2 className="size-5" aria-hidden />
+          Eliminar comida
+        </Button>
+      </section>
+
+      {/* Item quantity editor (reuses the picker sheet, quantity step only) */}
+      <AddItemSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onItemChange={(result) => {
+          void handleItemChange(result);
+        }}
+        editing={
+          editItem
+            ? { product_id: editItem.product_id, quantity: editItem.quantity }
+            : null
+        }
+      />
+
+      {/* Delete item confirmation */}
+      <AlertDialog
+        open={deleteItemTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteItemTarget(null);
+        }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar alimento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              “{deleteItemTarget?.product_name}” se quita de esta comida.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDeleteItem}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete meal confirmation */}
+      <AlertDialog
+        open={deleteMealOpen}
+        onOpenChange={(open) => {
+          if (!open) setDeleteMealOpen(false);
+        }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar comida?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se borran todos sus alimentos del registro.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDeleteMeal}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -61,6 +61,10 @@ const UNIT_LABELS: Record<string, string> = {
   scoop: "scoop",
   tablespoon: "cucharada",
   teaspoon: "cucharadita",
+  cup: "taza",
+  glass: "vaso",
+  can: "lata",
+  pack: "paquete",
 };
 
 export function unitLabel(name: string | null | undefined): string {

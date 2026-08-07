@@ -1,9 +1,16 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { Check, ChevronDown, Plus } from "lucide-react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { type Brand, type Category, type Unit } from "@/lib/db/database";
 import {
   type ProductDetail,
@@ -11,10 +18,9 @@ import {
 } from "@/lib/repositories/products";
 import { brandsRepository } from "@/lib/repositories/brands";
 import { categoriesRepository } from "@/lib/repositories/categories";
-import { unitsRepository } from "@/lib/repositories/units";
+import { unitLabel } from "@/lib/repositories/templates";
+import { unitsRepository, UNIT_PICKER_ORDER } from "@/lib/repositories/units";
 import { createClient } from "@/lib/supabase/client";
-
-const NEW_BRAND = "__new";
 
 const inputCls =
   "h-12 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-body-lg text-on-surface outline-none transition-all placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20";
@@ -93,7 +99,7 @@ function NumericCard({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           inputMode="decimal"
-          placeholder="0"
+          placeholder="Ej: 160"
           aria-label={label}
           className="w-20 bg-transparent text-center text-headline-lg-mobile font-semibold text-on-surface outline-none placeholder:text-outline"
         />
@@ -103,21 +109,147 @@ function NumericCard({
   );
 }
 
-function PresetChip({
-  onClick,
-  children,
+
+/**
+ * Single brand row of the drawer (checkmark when selected). Module-level:
+ * react-hooks/static-components forbids components defined during render.
+ */
+function BrandOptionRow({
+  selected,
+  label,
+  onSelect,
 }: {
-  onClick: () => void;
-  children: ReactNode;
+  selected: boolean;
+  label: string;
+  onSelect: () => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant transition-colors hover:bg-secondary-container hover:text-on-secondary-container"
+      onClick={onSelect}
+      className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left transition-colors hover:bg-surface-container-low active:bg-surface-container"
     >
-      {children}
+      <span
+        className={
+          selected
+            ? "text-body-lg font-semibold text-primary"
+            : "text-body-lg text-on-surface"
+        }
+      >
+        {label}
+      </span>
+      {selected && (
+        <Check className="size-5 flex-shrink-0 text-primary" aria-hidden />
+      )}
     </button>
+  );
+}
+
+/**
+ * Brand picker as a bottom drawer (SDD 09): the native select is ugly on
+ * Android, and a drawer also hosts the "create a new brand" input. The form
+ * owns the option list; creations come back through onBrandCreated.
+ */
+function BrandDrawer({
+  open,
+  onOpenChange,
+  userId,
+  brands,
+  value,
+  onChange,
+  onBrandCreated,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  userId: string;
+  brands: Brand[];
+  value: string;
+  onChange: (brandId: string) => void;
+  onBrandCreated: (brand: Brand) => void;
+}) {
+  const [newBrandName, setNewBrandName] = useState("");
+
+  async function handleCreateBrand() {
+    const name = newBrandName.trim();
+    if (!name) return;
+    const brand = await brandsRepository.getOrCreateByName(userId, name);
+    onBrandCreated(brand);
+    onChange(brand.id);
+    setNewBrandName("");
+    onOpenChange(false);
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="bottom"
+        className="mx-auto max-h-[70dvh] rounded-t-2xl sm:max-w-md"
+      >
+        <SheetHeader className="border-b border-outline-variant">
+          <SheetTitle className="text-center font-title-md text-on-surface">
+            Marca / Fabricante
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            Elegí una marca existente o creá una nueva.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-4 pb-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-1">
+            <BrandOptionRow
+              selected={value === ""}
+              label="Sin marca"
+              onSelect={() => {
+                onChange("");
+                onOpenChange(false);
+              }}
+            />
+            {brands.map((brand) => (
+              <BrandOptionRow
+                key={brand.id}
+                selected={value === brand.id}
+                label={brand.name}
+                onSelect={() => {
+                  onChange(brand.id);
+                  onOpenChange(false);
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="border-t border-outline-variant pt-4">
+            <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-outline">
+              O crear una nueva
+            </p>
+            <div className="mt-1 flex gap-2">
+              <input
+                value={newBrandName}
+                onChange={(event) => setNewBrandName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void handleCreateBrand();
+                  }
+                }}
+                placeholder="Ej: Bimbo"
+                aria-label="Nombre de la nueva marca"
+                className={inputCls}
+              />
+              <Button
+                type="button"
+                onClick={() => void handleCreateBrand()}
+                disabled={!newBrandName.trim()}
+                size="icon"
+                className="h-12 w-12 flex-shrink-0 rounded-full"
+                aria-label="Crear marca"
+              >
+                <Plus className="size-5" aria-hidden />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -130,9 +262,9 @@ interface ProductFormProps {
 }
 
 /**
- * Shared product form (SDD 06): creation (products/new) and editing
- * (products/[id]/edit) render the exact same screens. Local-first: the
- * page persists via the repository, never here.
+ * Shared product form (SDD 06, UX reworked in SDD 09): creation
+ * (products/new) and editing (products/[id]/edit) render the exact same
+ * screens. Local-first: the page persists via the repository, never here.
  */
 export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps) {
   const [userId, setUserId] = useState<string | null>(null);
@@ -144,7 +276,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
 
   const [name, setName] = useState(initial?.name ?? "");
   const [brandValue, setBrandValue] = useState(initial?.brand_id ?? "");
-  const [newBrandName, setNewBrandName] = useState("");
+  const [brandSheetOpen, setBrandSheetOpen] = useState(false);
   const [categoryId, setCategoryId] = useState(initial?.category_id ?? "");
   const [servingAmount, setServingAmount] = useState(
     String(initial?.serving_amount ?? "1")
@@ -194,19 +326,33 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
     });
   }, [userId, initial]);
 
-  function applyPreset(kind: "100g" | "1unidad") {
-    if (kind === "100g") {
-      const gram = units.find((unit) => unit.name === "Gram");
-      setServingAmount("100");
-      setServingUnitId(gram?.id ?? "");
-      setServingWeight("100");
-    } else {
-      const unit = units.find((unit) => unit.name === "Unit");
-      setServingAmount("1");
-      setServingUnitId(unit?.id ?? "");
-      setServingWeight("");
-    }
-  }
+  /**
+   * "Peso equivalente" only makes sense for non-weight units (g/ml are the
+   * measure itself): it must react immediately when the unit changes.
+   */
+  const selectedUnit = units.find((unit) => unit.id === servingUnitId);
+  const unitName = selectedUnit?.name.trim().toLowerCase() ?? "";
+  const isWeightUnit = unitName === "gram" || unitName === "milliliter";
+  const showWeight = selectedUnit !== undefined && !isWeightUnit;
+
+  /** Canonical units first (g, ml, unidad, rebanada…), custom ones after. */
+  const orderedUnits = useMemo(() => {
+    const order = new Map(
+      UNIT_PICKER_ORDER.map((name, index) => [name.toLowerCase(), index])
+    );
+    return [...units].sort((a, b) => {
+      const indexA = order.get(a.name.toLowerCase());
+      const indexB = order.get(b.name.toLowerCase());
+      if (indexA !== undefined && indexB !== undefined) return indexA - indexB;
+      if (indexA !== undefined) return -1;
+      if (indexB !== undefined) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [units]);
+
+  const selectedBrandName = brands.find(
+    (brand) => brand.id === brandValue
+  )?.name;
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -217,22 +363,21 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
       return;
     }
     const amount = toNumber(servingAmount);
-    if (amount < 1) {
-      setError("La cantidad de la porción debe ser al menos 1.");
+    if (!servingAmount.trim() || amount < 1) {
+      setError("La cantidad de la porción es obligatoria (al menos 1).");
       return;
     }
-
-    let brandId: string | null = null;
-    if (brandValue === NEW_BRAND) {
-      if (newBrandName.trim()) {
-        const brand = await brandsRepository.getOrCreateByName(
-          userId,
-          newBrandName
-        );
-        brandId = brand.id;
-      }
-    } else if (brandValue) {
-      brandId = brandValue;
+    if (!protein.trim()) {
+      setError("La proteína es obligatoria.");
+      return;
+    }
+    if (!servingUnitId) {
+      setError("Elegí una unidad para la porción.");
+      return;
+    }
+    if (showWeight && !servingWeight.trim()) {
+      setError("El peso equivalente es obligatorio para esta unidad.");
+      return;
     }
 
     setSaving(true);
@@ -240,7 +385,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
     try {
       await onSubmit({
         name,
-        brand_id: brandId,
+        brand_id: brandValue || null,
         category_id: categoryId || null,
         serving_amount: amount,
         serving_unit_id: servingUnitId || null,
@@ -273,7 +418,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
           Identificación
         </h2>
         <div className="flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface p-4">
-          <Field label="Nombre del producto">
+          <Field label="Nombre del producto*">
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -283,29 +428,17 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
             />
           </Field>
 
-          <SelectField
-            label="Marca / Fabricante"
-            value={brandValue}
-            onChange={setBrandValue}
-          >
-            <option value="">Sin marca</option>
-            {brands.map((brand) => (
-              <option key={brand.id} value={brand.id}>
-                {brand.name}
-              </option>
-            ))}
-            <option value={NEW_BRAND}>Nueva marca…</option>
-          </SelectField>
-
-          {brandValue === NEW_BRAND && (
-            <input
-              value={newBrandName}
-              onChange={(event) => setNewBrandName(event.target.value)}
-              placeholder="Nombre de la nueva marca"
-              aria-label="Nombre de la nueva marca"
-              className={inputCls}
-            />
-          )}
+          <Field label="Marca / Fabricante">
+            <button
+              type="button"
+              onClick={() => setBrandSheetOpen(true)}
+              aria-label="Elegir marca"
+              className="flex h-12 w-full items-center justify-between rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-body-lg text-on-surface outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+            >
+              <span>{selectedBrandName ?? "Sin marca"}</span>
+              <ChevronDown className="size-5 text-outline" aria-hidden />
+            </button>
+          </Field>
 
           <SelectField
             label="Categoría"
@@ -322,72 +455,56 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
         </div>
       </section>
 
-      {/* Porción */}
+      {/* Porción de referencia */}
       <section className="flex flex-col gap-2">
         <h2 className="px-1 text-label-caps uppercase text-on-surface-variant">
-          Porción
+          Porción de referencia*
         </h2>
         <p className="px-1 text-body-sm-dense text-on-surface-variant">
-          La porción tal como figura en la etiqueta (ej. 2 rebanadas · 59 g).
+          La porción de la etiqueta (ej. 2 rebanadas) y su peso equivalente en
+          gramos (ej. 50 g).
         </p>
         <div className="flex flex-col gap-4 rounded-xl border border-outline-variant bg-surface p-4">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex flex-col gap-1">
-              <span className="px-1 text-center text-[10px] font-bold uppercase tracking-wider text-outline">
-                Cantidad
-              </span>
-              <input
-                value={servingAmount}
-                onChange={(event) => setServingAmount(event.target.value)}
-                inputMode="decimal"
-                aria-label="Cantidad de la porción"
-                className={`${inputCls} text-center`}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="px-1 text-center text-[10px] font-bold uppercase tracking-wider text-outline">
-                Unidad
-              </span>
-              <div className="relative">
-                <select
-                  value={servingUnitId}
-                  onChange={(event) => setServingUnitId(event.target.value)}
-                  aria-label="Unidad de la porción"
-                  className={selectCls}
-                >
-                  <option value="">—</option>
-                  {units.map((unit) => (
-                    <option key={unit.id} value={unit.id}>
-                      {unit.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  className="pointer-events-none absolute right-3 top-3.5 size-5 text-outline"
-                  aria-hidden
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="px-1 text-center text-[10px] font-bold uppercase tracking-wider text-outline">
-                Peso (g/ml)
-              </span>
+          <Field label="Cantidad*">
+            <input
+              value={servingAmount}
+              onChange={(event) => setServingAmount(event.target.value)}
+              inputMode="decimal"
+              placeholder="Ej: 2"
+              aria-label="Cantidad de la porción"
+              className={inputCls}
+            />
+          </Field>
+
+          <SelectField
+            label="Unidad"
+            value={servingUnitId}
+            onChange={setServingUnitId}
+          >
+            <option value="">—</option>
+            {orderedUnits.map((unit) => (
+              <option key={unit.id} value={unit.id}>
+                {unitLabel(unit.name)}
+              </option>
+            ))}
+          </SelectField>
+
+          {showWeight && (
+            <Field label="Peso equivalente (g)">
               <input
                 value={servingWeight}
                 onChange={(event) => setServingWeight(event.target.value)}
                 inputMode="decimal"
-                placeholder="59"
-                aria-label="Peso de la porción en gramos o mililitros"
-                className={`${inputCls} text-center`}
+                placeholder="Ej: 50"
+                aria-label="Peso equivalente de la porción en gramos"
+                className={inputCls}
               />
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <PresetChip onClick={() => applyPreset("100g")}>100 g</PresetChip>
-            <PresetChip onClick={() => applyPreset("1unidad")}>
-              1 unidad
-            </PresetChip>
-          </div>
+              <p className="px-1 text-body-sm-dense text-on-surface-variant">
+                Cuántos gramos pesa esa porción. Se usa para convertir cuando
+                registrás por peso.
+              </p>
+            </Field>
+          )}
         </div>
       </section>
 
@@ -403,14 +520,14 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2 flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-primary bg-primary-container p-5 text-on-primary-container">
             <span className="text-label-caps uppercase opacity-80">
-              Proteína
+              Proteína*
             </span>
             <div className="flex items-baseline gap-1">
               <input
                 value={protein}
                 onChange={(event) => setProtein(event.target.value)}
                 inputMode="decimal"
-                placeholder="0,0"
+                placeholder="Ej: 20"
                 aria-label="Proteína por porción en gramos"
                 className="w-40 bg-transparent text-center text-display-protein font-bold text-on-primary-container outline-none placeholder:text-on-primary-container/30"
               />
@@ -427,7 +544,12 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
             value={calories}
             onChange={setCalories}
           />
-          <NumericCard label="Carbos" unit="g" value={carbs} onChange={setCarbs} />
+          <NumericCard
+            label="Carbohidratos"
+            unit="g"
+            value={carbs}
+            onChange={setCarbs}
+          />
           <NumericCard label="Grasas" unit="g" value={fat} onChange={setFat} />
           <NumericCard label="Fibras" unit="g" value={fiber} onChange={setFiber} />
         </div>
@@ -435,6 +557,25 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
 
       {error && (
         <p className="px-1 text-body-sm-dense text-destructive">{error}</p>
+      )}
+
+      {/* Brand drawer (SDD 09): select nativo reemplazado */}
+      {userId && (
+        <BrandDrawer
+          open={brandSheetOpen}
+          onOpenChange={setBrandSheetOpen}
+          userId={userId}
+          brands={brands}
+          value={brandValue}
+          onChange={setBrandValue}
+          onBrandCreated={(brand) =>
+            setBrands((current) =>
+              current.some((existing) => existing.id === brand.id)
+                ? current
+                : [...current, brand]
+            )
+          }
+        />
       )}
 
       {/* Fixed save footer (the bottom nav is hidden on these screens) */}
