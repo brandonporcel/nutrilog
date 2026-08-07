@@ -1,4 +1,4 @@
-import { db, type DailyLogItem } from "@/lib/db/database";
+import { db, type Category, type DailyLog, type DailyLogItem, type Product, type Unit } from "@/lib/db/database";
 import { scheduleSync } from "@/lib/sync/sync";
 
 /**
@@ -33,6 +33,22 @@ export interface MealItemDetail extends DailyLogItem {
   unit_label: string;
 }
 
+/** Full meal for /meals/[id]: items, totals and the editable local date/time. */
+export interface MealDetail {
+  meal_id: string;
+  /** Derived from the first item's local time (Desayuno/Almuerzo/Merienda/Cena). */
+  name: string;
+  /** Lucide icon name for the meal avatar (see mealKind). */
+  icon: string;
+  /** Local calendar date (YYYY-MM-DD) of the meal's first item. */
+  date: string;
+  /** Local clock time (HH:MM) of the meal's first item. */
+  time: string;
+  items: MealItemDetail[];
+  protein_total: number;
+  calories_total: number;
+}
+
 export interface TodaySummary {
   meals: Meal[];
   protein_total: number;
@@ -46,6 +62,22 @@ export function todayLocal(): string {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${now.getFullYear()}-${month}-${day}`;
+}
+
+/** Local calendar date (YYYY-MM-DD) of a stored (UTC) timestamp. */
+function localDateOf(iso: string): string {
+  const date = new Date(iso);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+/** Local clock time (HH:MM) of a stored (UTC) timestamp. */
+function localTimeOf(iso: string): string {
+  const date = new Date(iso);
+  return `${String(date.getHours()).padStart(2, "0")}:${String(
+    date.getMinutes()
+  ).padStart(2, "0")}`;
 }
 
 /** Local calendar date (YYYY-MM-DD) `days` days ago. */
@@ -89,29 +121,8 @@ export const dailyLogRepository = {
       .filter((item) => !item.deleted_at)
       .sortBy("created_at");
 
-    const productIds = [...new Set(items.map((item) => item.product_id))];
-    const products =
-      productIds.length > 0 ? await db.products.bulkGet(productIds) : [];
-    const productById = new Map(
-      products.filter((p) => p !== undefined).map((p) => [p!.id, p!])
-    );
-
-    const categoryIds = products
-      .map((p) => p?.category_id)
-      .filter((c): c is string => Boolean(c));
-    const unitIds = products
-      .map((p) => p?.serving_unit_id)
-      .filter((u): u is string => Boolean(u));
-
-    const [categories, units] = await Promise.all([
-      categoryIds.length > 0 ? db.categories.bulkGet(categoryIds) : Promise.resolve([]),
-      unitIds.length > 0 ? db.units.bulkGet(unitIds) : Promise.resolve([]),
-    ]);
-    const categoryById = new Map(
-      categories.filter((c) => c !== undefined).map((c) => [c!.id, c!])
-    );
-    const unitById = new Map(
-      units.filter((u) => u !== undefined).map((u) => [u!.id, u!])
+    const { productById, categoryById, unitById } = await resolveItemDetails(
+      items
     );
 
     const byMeal = new Map<string, DailyLogItem[]>();
@@ -127,12 +138,14 @@ export const dailyLogRepository = {
 
     for (const [mealId, mealItems] of byMeal) {
       const { name, icon } = mealKind(mealItems[0].created_at);
-      let mealProtein = 0;
-      let mealCalories = 0;
+      const { protein: mealProtein, calories: mealCalories } = mealTotals(
+        mealItems,
+        productById
+      );
+      proteinTotal += mealProtein;
+      caloriesTotal += mealCalories;
       const detailItems: MealItemDetail[] = mealItems.map((item) => {
         const product = productById.get(item.product_id);
-        mealProtein += item.quantity * (product?.protein ?? 0);
-        mealCalories += item.quantity * (product?.calories ?? 0);
         return {
           ...item,
           product_name: product?.name ?? "Producto eliminado",
@@ -231,10 +244,167 @@ export const dailyLogRepository = {
 
   getFrequentProductIds,
   getWeeklyAverage,
+  getMeal,
+  updateMealTime,
 };
 
 function emptyToday(): TodaySummary {
   return { meals: [], protein_total: 0, calories_total: 0, meal_count: 0 };
+}
+
+/**
+ * One meal (group of items sharing a meal_id) with its resolved items and
+ * totals, plus the editable local date/time of its first item.
+ */
+async function getMeal(userId: string, mealId: string): Promise<MealDetail | null> {
+  const items = await db.daily_log_items
+    .where("meal_id")
+    .equals(mealId)
+    .filter((item) => !item.deleted_at && item.user_id === userId)
+    .sortBy("created_at");
+  if (items.length === 0) return null;
+
+  const { productById, categoryById, unitById } = await resolveItemDetails(items);
+  const { protein, calories } = mealTotals(items, productById);
+  const { name, icon } = mealKind(items[0].created_at);
+
+  return {
+    meal_id: mealId,
+    name,
+    icon,
+    date: localDateOf(items[0].created_at),
+    time: localTimeOf(items[0].created_at),
+    items: items.map((item) => {
+      const product = productById.get(item.product_id);
+      return {
+        ...item,
+        product_name: product?.name ?? "Producto eliminado",
+        category_icon: product?.category_id
+          ? (categoryById.get(product.category_id)?.icon ?? null)
+          : null,
+        unit_label: product?.serving_unit_id
+          ? (unitById.get(product.serving_unit_id)?.name ?? "")
+          : "",
+      };
+    }),
+    protein_total: round1(protein),
+    calories_total: Math.round(calories),
+  };
+}
+
+/**
+ * Moves a meal to another local date/time: its items re-point to that day's
+ * log (upserted when missing) and get the new timestamp. The meal_id never
+ * changes — only the day anchor and the clock time do. A meal moved away can
+ * leave an empty log row behind (harmless; the UI only lists days with items).
+ */
+async function updateMealTime(
+  userId: string,
+  mealId: string,
+  date: string,
+  time: string
+): Promise<void> {
+  const items = await db.daily_log_items
+    .where("meal_id")
+    .equals(mealId)
+    .filter((item) => !item.deleted_at && item.user_id === userId)
+    .toArray();
+  if (items.length === 0) return;
+
+  // "YYYY-MM-DDTHH:MM" parses as LOCAL time → the stored UTC instant matches
+  // what the user saw in the pickers.
+  const timestamp = new Date(`${date}T${time}`).toISOString();
+
+  await db.transaction("rw", db.daily_logs, db.daily_log_items, async () => {
+    let logId: string;
+    const existing = await db.daily_logs
+      .where("[user_id+date]")
+      .equals([userId, date])
+      .first();
+    if (existing && !existing.deleted_at) {
+      await db.daily_logs.update(existing.id, { updated_at: timestamp });
+      logId = existing.id;
+    } else {
+      const log: DailyLog = {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        date,
+        created_at: timestamp,
+        updated_at: timestamp,
+        deleted_at: null,
+      };
+      await db.daily_logs.add(log);
+      logId = log.id;
+    }
+
+    await db.daily_log_items
+      .where("meal_id")
+      .equals(mealId)
+      .filter((item) => !item.deleted_at && item.user_id === userId)
+      .modify({
+        daily_log_id: logId,
+        created_at: timestamp,
+        updated_at: timestamp,
+      });
+  });
+
+  scheduleSync();
+}
+
+/**
+ * Resolves the products (and their categories/units) referenced by a set of
+ * log items — shared by getToday and getMeal.
+ */
+async function resolveItemDetails(items: DailyLogItem[]): Promise<{
+  productById: Map<string, Product>;
+  categoryById: Map<string, Category>;
+  unitById: Map<string, Unit>;
+}> {
+  const productIds = [...new Set(items.map((item) => item.product_id))];
+  const products =
+    productIds.length > 0 ? await db.products.bulkGet(productIds) : [];
+  const productById = new Map(
+    products.filter((p) => p !== undefined).map((p) => [p!.id, p!])
+  );
+
+  const categoryIds = products
+    .map((p) => p?.category_id)
+    .filter((c): c is string => Boolean(c));
+  const unitIds = products
+    .map((p) => p?.serving_unit_id)
+    .filter((u): u is string => Boolean(u));
+
+  const [categories, units] = await Promise.all([
+    categoryIds.length > 0
+      ? db.categories.bulkGet(categoryIds)
+      : Promise.resolve([]),
+    unitIds.length > 0 ? db.units.bulkGet(unitIds) : Promise.resolve([]),
+  ]);
+
+  return {
+    productById,
+    categoryById: new Map(
+      categories.filter((c) => c !== undefined).map((c) => [c!.id, c!])
+    ),
+    unitById: new Map(
+      units.filter((u) => u !== undefined).map((u) => [u!.id, u!])
+    ),
+  };
+}
+
+/** Protein/calories of a group of items using the CURRENT product values. */
+function mealTotals(
+  items: DailyLogItem[],
+  productById: Map<string, Product>
+): { protein: number; calories: number } {
+  let protein = 0;
+  let calories = 0;
+  for (const item of items) {
+    const product = productById.get(item.product_id);
+    protein += item.quantity * (product?.protein ?? 0);
+    calories += item.quantity * (product?.calories ?? 0);
+  }
+  return { protein, calories };
 }
 
 /**

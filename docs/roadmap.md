@@ -70,14 +70,15 @@ El usuario puede registrar cualquier alimento personalizado.
 
 Estado
 
-🚧 En progreso (Home con meta de proteína y listado de comidas del día + flujo "Nueva comida" con agregar por producto o plantilla, SDD 08 ✅; pendiente: histórico, editar/eliminar comidas guardadas)
+🚧 En progreso (Home con meta de proteína y listado de comidas del día + flujo "Nueva comida" con agregar por producto o plantilla, SDD 08 ✅; detalle de comida con edición de fecha y hora ✅; pendiente: histórico, editar/eliminar items de una comida guardada)
 
 Objetivos
 
 - Crear registro diario ✅ (guardar comida → snapshot + agrupación por meal_id)
 - Agregar alimento ✅ (por unidades o gramos, con edición de cantidad)
 - Editar alimento ✅ (en el carrito de "Nueva comida")
-- Eliminar alimento
+- Eliminar alimento ✅ (en el carrito de "Nueva comida")
+- Mover una comida a otra fecha/hora ✅ (desde el detalle de la comida)
 - Historial por día
 
 Resultado esperado
@@ -128,15 +129,15 @@ Registrar comidas habituales requiere sólo unos pocos toques.
 
 Estado
 
-⬜ Pendiente
+✅ Completado (persistencia local en Dexie, cola y detección de cambios por `updated_at`, push/pull automático con last-write-wins y self-heal ante FK violations — `src/lib/sync/sync.ts`)
 
 Objetivos
 
-- Persistencia local
-- Cola de sincronización
-- Detección de cambios
-- Sincronización automática
-- Resolución básica de conflictos
+- Persistencia local ✅
+- Cola de sincronización ✅
+- Detección de cambios ✅
+- Sincronización automática ✅
+- Resolución básica de conflictos ✅
 
 Resultado esperado
 
@@ -144,28 +145,7 @@ La aplicación funciona correctamente incluso sin Internet.
 
 ---
 
-## Epic 6 - Sincronización entre dispositivos
-
-Estado
-
-⬜ Pendiente
-
-Objetivos
-
-- Installations
-- Devices
-- Vincular nuevo dispositivo
-- Código de vinculación
-- Código QR
-- Sincronización entre PC y teléfono
-
-Resultado esperado
-
-El usuario puede utilizar la misma información desde múltiples dispositivos.
-
----
-
-## Epic 7 - Estadísticas
+## Epic 6 - Estadísticas
 
 Estado
 
@@ -180,7 +160,7 @@ Objetivos
 
 ---
 
-## Epic 8 - Seguimiento corporal
+## Epic 7 - Seguimiento corporal
 
 Estado
 
@@ -194,7 +174,7 @@ Objetivos
 
 ---
 
-## Epic 9 - Automatización
+## Epic 8 - Automatización
 
 Estado
 
@@ -209,7 +189,7 @@ Objetivos
 
 ---
 
-## Epic 10 - Futuras mejoras
+## Epic 9 - Futuras mejoras
 
 Ideas
 

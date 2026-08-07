@@ -24,7 +24,7 @@ import {
   productsRepository,
   type ProductListItem,
 } from "@/lib/repositories/products";
-import { unitsRepository } from "@/lib/repositories/units";
+import { ensureUserCatalog } from "@/lib/seeder";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/ui/toast-store";
 
@@ -68,10 +68,7 @@ export default function ProductsPage() {
   useEffect(() => {
     if (!userId) return;
     // Seeds the catalog once per user (no-op when already seeded).
-    void Promise.all([
-      categoriesRepository.ensureSeeds(userId),
-      unitsRepository.ensureSeeds(userId),
-    ]).then(refresh);
+    void ensureUserCatalog(userId).then(refresh);
   }, [userId, refresh]);
 
   // Scrolling closes any open row (Material behavior for swipe actions).

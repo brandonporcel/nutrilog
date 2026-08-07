@@ -9,6 +9,7 @@ import {
   templatesRepository,
   type TemplateSummary,
 } from "@/lib/repositories/templates";
+import { ensureUserCatalog } from "@/lib/seeder";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/ui/toast-store";
 
@@ -28,6 +29,7 @@ export default function NewMealPage() {
         const [today, templateList] = await Promise.all([
           dailyLogRepository.getToday(currentUserId),
           templatesRepository.getAll(currentUserId),
+          ensureUserCatalog(currentUserId),
         ]);
         setConsumedToday(today.protein_total);
         setTemplates(templateList);
