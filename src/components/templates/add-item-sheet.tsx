@@ -74,6 +74,14 @@ export function AddItemSheet({
   templates,
   onTemplatePick,
 }: AddItemSheetProps) {
+  // On touch devices auto-focusing the search pops the keyboard open the
+  // instant the sheet appears; on desktop it is the fastest way to start.
+  const desktopOnly = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      !(window.matchMedia?.("(pointer: coarse)").matches ?? false),
+    []
+  );
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [frequentIds, setFrequentIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,6 +160,28 @@ export function AddItemSheet({
     );
   }, [products, query]);
 
+  /**
+   * The Frecuentes tab shows your most-used products; once you type, the
+   * query first matches frequent ones and, when nothing matches, falls back
+   * to the full catalog — the search always finds what you are looking for.
+   */
+  const frequentResults = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return frequentProducts;
+    const matches = frequentProducts.filter((product) =>
+      product.name.toLowerCase().includes(term)
+    );
+    return matches.length > 0 ? matches : filtered;
+  }, [frequentProducts, filtered, query]);
+
+  const filteredTemplates = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return templates;
+    return templates?.filter((template) =>
+      template.name.toLowerCase().includes(term)
+    );
+  }, [templates, query]);
+
   const qty = toQuantity(quantity);
   const protein = selected ? Math.round(qty * selected.protein * 10) / 10 : 0;
   const calories = selected ? Math.round(qty * selected.calories) : 0;
@@ -173,7 +203,9 @@ export function AddItemSheet({
       <SheetContent
         side="bottom"
         showCloseButton={step === "pick"}
-        className="mx-auto max-h-[85dvh] rounded-t-2xl sm:max-w-md"
+        // Fixed 75% viewport height: short catalogs still fill the sheet so
+        // the list sits in the eye line on mobile and desktop alike.
+        className="mx-auto data-[side=bottom]:h-[75dvh] rounded-t-2xl sm:max-w-md"
       >
         <SheetHeader className="border-b border-outline-variant">
           {step === "amount" && selected && (
@@ -239,21 +271,37 @@ export function AddItemSheet({
               )}
             </div>
 
+            {/* Search is shared by every tab and always visible. */}
+            <div className="relative px-4 pb-1 pt-3">
+              <div className="pointer-events-none absolute inset-y-0 left-0 ml-7 flex items-center">
+                <PackageSearch className="size-5 text-on-surface-variant" aria-hidden />
+              </div>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar alimentos o plantillas…"
+                aria-label="Buscar alimentos o plantillas"
+                autoFocus={desktopOnly}
+                className="block h-touch-target-min w-full rounded-xl border border-outline-variant bg-surface-container pl-10 pr-3 text-body-lg text-on-surface outline-none transition-all placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
             {tab === "frequent" ? (
-              <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2 pt-2">
+              <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
                 {loading && (
                   <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
                     Cargando…
                   </p>
                 )}
-                {!loading && frequentProducts.length === 0 && (
+                {!loading && frequentResults.length === 0 && (
                   <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
-                    Todavía no tenés alimentos frecuentes. Registrá comidas y
-                    tus alimentos más usados aparecen acá.
+                    {query.trim()
+                      ? `Sin resultados para “${query.trim()}”.`
+                      : "Todavía no tenés alimentos frecuentes. Registrá comidas y tus alimentos más usados aparecen acá."}
                   </p>
                 )}
                 {!loading &&
-                  frequentProducts.map((product) => (
+                  frequentResults.map((product) => (
                     <button
                       key={product.id}
                       type="button"
@@ -281,72 +329,62 @@ export function AddItemSheet({
                   ))}
               </div>
             ) : tab === "products" ? (
-              <>
-                <div className="relative px-4 pb-2 pt-3">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 ml-7 flex items-center">
-                    <PackageSearch className="size-5 text-on-surface-variant" aria-hidden />
-                  </div>
-                  <input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Buscar productos…"
-                    aria-label="Buscar productos"
-                    autoFocus
-                    className="block h-touch-target-min w-full rounded-xl border border-outline-variant bg-surface-container pl-10 pr-3 text-body-lg text-on-surface outline-none transition-all placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-
-                <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
-                  {loading && (
-                    <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
-                      Cargando…
-                    </p>
-                  )}
-                  {!loading && filtered.length === 0 && (
-                    <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
-                      {query.trim()
-                        ? `Sin resultados para “${query.trim()}”.`
-                        : "Todavía no tenés productos."}
-                    </p>
-                  )}
-                  {!loading &&
-                    filtered.map((product) => (
-                      <button
-                        key={product.id}
-                        type="button"
-                        onClick={() => pickProduct(product)}
-                        className="flex w-full items-center rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low active:bg-surface-container"
-                      >
-                        <div className="mr-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
-                          <CategoryIcon
-                            icon={product.category_icon}
-                            className="size-5"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-grow">
-                          <p className="truncate text-body-lg font-semibold text-on-surface">
-                            {product.name}
-                          </p>
-                          <p className="truncate text-body-sm-dense text-on-surface-variant">
-                            {product.brand_name ?? "Sin marca"} ·{" "}
-                            <span className="text-primary">
-                              {product.protein} g prot
-                            </span>
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                </div>
-              </>
-            ) : (
-              <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2 pt-2">
-                {templates && templates.length === 0 ? (
+              <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
+                {loading && (
                   <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
-                    Todavía no tenés plantillas. Podés crearlas desde la
-                    pestaña Modelos.
+                    Cargando…
+                  </p>
+                )}
+                {!loading && filtered.length === 0 && (
+                  <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
+                    {query.trim()
+                      ? `Sin resultados para “${query.trim()}”.`
+                      : "Todavía no tenés productos."}
+                  </p>
+                )}
+                {!loading &&
+                  filtered.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => pickProduct(product)}
+                      className="flex w-full items-center rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low active:bg-surface-container"
+                    >
+                      <div className="mr-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-secondary-container text-secondary">
+                        <CategoryIcon
+                          icon={product.category_icon}
+                          className="size-5"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-grow">
+                        <p className="truncate text-body-lg font-semibold text-on-surface">
+                          {product.name}
+                        </p>
+                        <p className="truncate text-body-sm-dense text-on-surface-variant">
+                          {product.brand_name ?? "Sin marca"} ·{" "}
+                          <span className="text-primary">
+                            {product.protein} g prot
+                          </span>
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+              </div>
+            ) : (
+              <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
+                {loading && (
+                  <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
+                    Cargando…
+                  </p>
+                )}
+                {!loading && filteredTemplates?.length === 0 ? (
+                  <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
+                    {query.trim()
+                      ? `Sin resultados para “${query.trim()}”.`
+                      : "Todavía no tenés plantillas. Podés crearlas desde la pestaña Modelos."}
                   </p>
                 ) : (
-                  templates?.map((template) => (
+                  filteredTemplates?.map((template) => (
                     <button
                       key={template.id}
                       type="button"
