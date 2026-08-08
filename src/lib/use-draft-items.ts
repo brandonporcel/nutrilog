@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { type AddItemResult } from "@/components/templates/add-item-sheet";
+import { servingsFor } from "@/lib/portion";
 import {
   type TemplateDetail,
   type TemplateItemDetail,
@@ -22,8 +23,9 @@ export interface DraftItem {
 
 /** Renders the display unit for a quantity ("g", "unidad", "rebanadas"…). */
 export function pluralUnit(quantity: number, label: string): string {
-  // Short units (g, ml…) don't pluralize; everything else gets an "s".
+  // Short units (g, ml…) don't pluralize; "unidad" becomes "unidades".
   if (quantity === 1 || label.length <= 2 || label.endsWith("s")) return label;
+  if (label.endsWith("dad")) return `${label.slice(0, -1)}es`;
   return `${label}s`;
 }
 
@@ -81,8 +83,9 @@ export function useDraftItems(initial: DraftItem[] = []) {
                 category_icon: product.category_icon,
                 unit_label: unitLabel(product.serving_unit_name),
                 quantity,
-                protein: Math.round(quantity * product.protein * 10) / 10,
-                calories: Math.round(quantity * product.calories),
+                protein:
+                  Math.round(servingsFor(quantity, product) * product.protein * 10) / 10,
+                calories: Math.round(servingsFor(quantity, product) * product.calories),
               }
             : item
         )
@@ -96,8 +99,8 @@ export function useDraftItems(initial: DraftItem[] = []) {
       category_icon: product.category_icon,
       unit_label: unitLabel(product.serving_unit_name),
       quantity,
-      protein: Math.round(quantity * product.protein * 10) / 10,
-      calories: Math.round(quantity * product.calories),
+      protein: Math.round(servingsFor(quantity, product) * product.protein * 10) / 10,
+      calories: Math.round(servingsFor(quantity, product) * product.calories),
     }]);
   }
 

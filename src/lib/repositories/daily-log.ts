@@ -1,4 +1,5 @@
 import { db, type Category, type DailyLog, type DailyLogItem, type Product, type Unit } from "@/lib/db/database";
+import { servingsFor } from "@/lib/portion";
 import { scheduleSync } from "@/lib/sync/sync";
 
 /**
@@ -9,7 +10,7 @@ import { scheduleSync } from "@/lib/sync/sync";
  * history stays frozen even if a product changes later.
  */
 
-/** Draft item: a product and how many servings the meal uses. */
+/** Draft item: a product and a quantity in the product's OWN unit (g, rebanadas…). */
 export interface MealItemInput {
   product_id: string;
   quantity: number;
@@ -354,16 +355,21 @@ async function updateMealTime(
   scheduleSync();
 }
 
-/** Snapshot of the nutritional values for a consumed quantity. */
+/**
+ * Snapshot of the nutritional values for a consumed quantity. Macros scale
+ * with the reference portion (servingsFor), so 2 rebanadas of a product whose
+ * portion is "2 rebanadas" counts one portion, not two.
+ */
 function snapshotFor(product: Product | undefined, quantity: number) {
+  const servings = servingsFor(quantity, product);
   return {
-    protein: round1(quantity * (product?.protein ?? 0)),
-    carbs: round1(quantity * (product?.carbs ?? 0)),
-    fat: round1(quantity * (product?.fat ?? 0)),
-    fiber: round1(quantity * (product?.fiber ?? 0)),
-    calories: Math.round(quantity * (product?.calories ?? 0)),
-    sugars: round1(quantity * (product?.sugars ?? 0)),
-    sodium: round1(quantity * (product?.sodium ?? 0)),
+    protein: round1(servings * (product?.protein ?? 0)),
+    carbs: round1(servings * (product?.carbs ?? 0)),
+    fat: round1(servings * (product?.fat ?? 0)),
+    fiber: round1(servings * (product?.fiber ?? 0)),
+    calories: Math.round(servings * (product?.calories ?? 0)),
+    sugars: round1(servings * (product?.sugars ?? 0)),
+    sodium: round1(servings * (product?.sodium ?? 0)),
   };
 }
 
@@ -453,8 +459,8 @@ function mealTotals(
   let calories = 0;
   for (const item of items) {
     const product = productById.get(item.product_id);
-    protein += item.quantity * (product?.protein ?? 0);
-    calories += item.quantity * (product?.calories ?? 0);
+    protein += servingsFor(item.quantity, product) * (product?.protein ?? 0);
+    calories += servingsFor(item.quantity, product) * (product?.calories ?? 0);
   }
   return { protein, calories };
 }

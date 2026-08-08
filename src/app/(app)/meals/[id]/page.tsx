@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { formatNumber } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons/category-icon";
 import { MealIcon } from "@/lib/icons/meal-icon";
 import {
@@ -161,7 +162,7 @@ export default function MealDetailPage() {
         <div className="grid grid-cols-2 gap-2 border-t border-outline-variant/60 pt-3">
           <div className="text-center">
             <p className="text-display-protein font-bold text-primary">
-              {meal.protein_total} g
+              {formatNumber(meal.protein_total)} g
             </p>
             <p className="text-body-sm-dense text-on-surface-variant">
               Proteína
@@ -169,7 +170,7 @@ export default function MealDetailPage() {
           </div>
           <div className="text-center">
             <p className="text-numeric-data text-on-surface">
-              {meal.calories_total} kcal
+              {formatNumber(meal.calories_total, 0)} kcal
             </p>
             <p className="text-body-sm-dense text-on-surface-variant">
               Calorías
@@ -210,13 +211,15 @@ export default function MealDetailPage() {
                     {item.product_name}
                   </p>
                   <p className="truncate text-body-sm-dense text-on-surface-variant">
-                    {item.quantity}{" "}
+                    {formatNumber(item.quantity, 2)}{" "}
                     {unitLabel(item.unit_label || undefined)} ·{" "}
-                    <span className="text-primary">{item.protein} g prot</span>
+                    <span className="text-primary">
+                      {formatNumber(item.protein)} g prot
+                    </span>
                   </p>
                 </div>
                 <span className="ml-4 flex-shrink-0 text-numeric-data text-on-surface">
-                  {item.calories} kcal
+                  {formatNumber(item.calories, 0)} kcal
                 </span>
               </div>
             </SwipeableRow>
