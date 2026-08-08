@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { type Brand, type Category, type Unit } from "@/lib/db/database";
+import { CategoryIcon } from "@/lib/icons/category-icon";
 import {
   type ProductDetail,
   type ProductInput,
@@ -25,8 +26,9 @@ import { createClient } from "@/lib/supabase/client";
 const inputCls =
   "h-12 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-body-lg text-on-surface outline-none transition-all placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20";
 
-const selectCls =
-  "h-12 w-full appearance-none rounded-lg border border-outline-variant bg-surface-container-lowest px-3 pr-10 text-body-lg text-on-surface outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20";
+/** Shared trigger for the drawer pickers (brand, category, unit). */
+const pickerTriggerCls =
+  "flex h-12 w-full items-center justify-between rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-body-lg text-on-surface outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 /** Accepts both "." and "," decimal separators. */
 function toNumber(value: string): number {
@@ -41,39 +43,6 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
         {label}
       </span>
       {children}
-    </div>
-  );
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  children,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="px-1 text-[10px] font-bold uppercase tracking-wider text-outline">
-        {label}
-      </span>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className={selectCls}
-        >
-          {children}
-        </select>
-        <ChevronDown
-          className="pointer-events-none absolute right-3 top-3.5 size-5 text-outline"
-          aria-hidden
-        />
-      </div>
     </div>
   );
 }
@@ -111,10 +80,11 @@ function NumericCard({
 
 
 /**
- * Single brand row of the drawer (checkmark when selected). Module-level:
+ * Single option row of a drawer (checkmark when selected). Module-level:
  * react-hooks/static-components forbids components defined during render.
+ * Shared by the brand and unit drawers.
  */
-function BrandOptionRow({
+function OptionRow({
   selected,
   label,
   onSelect,
@@ -196,7 +166,7 @@ function BrandDrawer({
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-4 pb-4">
           <div className="min-h-0 flex-1 overflow-y-auto px-1">
-            <BrandOptionRow
+            <OptionRow
               selected={value === ""}
               label="Sin marca"
               onSelect={() => {
@@ -205,7 +175,7 @@ function BrandDrawer({
               }}
             />
             {brands.map((brand) => (
-              <BrandOptionRow
+              <OptionRow
                 key={brand.id}
                 selected={value === brand.id}
                 label={brand.name}
@@ -253,6 +223,145 @@ function BrandDrawer({
   );
 }
 
+/**
+ * Category picker as a bottom drawer (grid of icon tiles). Deliberately
+ * different from the brand/unit drawers: categories have icons, so the
+ * options are big touch tiles instead of text rows.
+ */
+function CategoryDrawer({
+  open,
+  onOpenChange,
+  categories,
+  value,
+  onChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  categories: Category[];
+  value: string;
+  onChange: (categoryId: string) => void;
+}) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="bottom"
+        className="mx-auto max-h-[70dvh] rounded-t-2xl sm:max-w-md"
+      >
+        <SheetHeader className="border-b border-outline-variant">
+          <SheetTitle className="text-center font-title-md text-on-surface">
+            Categoría
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            Elegí una categoría para el producto.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-1 pt-2">
+            <OptionRow
+              selected={value === ""}
+              label="Sin categoría"
+              onSelect={() => {
+                onChange("");
+                onOpenChange(false);
+              }}
+            />
+            <div className="mt-2 grid grid-cols-2 gap-2 pb-2 sm:grid-cols-3">
+              {categories.map((category) => {
+                const selected = value === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => {
+                      onChange(category.id);
+                      onOpenChange(false);
+                    }}
+                    className={
+                      selected
+                        ? "flex flex-col items-center gap-2 rounded-xl border-2 border-primary bg-primary-container p-4 text-on-primary-container"
+                        : "flex flex-col items-center gap-2 rounded-xl border border-outline-variant bg-surface p-4 text-on-surface transition-colors hover:bg-surface-container-low active:bg-surface-container"
+                    }
+                  >
+                    <span
+                      className={
+                        selected
+                          ? "flex h-11 w-11 items-center justify-center rounded-full bg-primary text-on-primary"
+                          : "flex h-11 w-11 items-center justify-center rounded-full bg-secondary-container text-secondary"
+                      }
+                    >
+                      <CategoryIcon
+                        icon={category.icon}
+                        className="size-5"
+                        aria-hidden
+                      />
+                    </span>
+                    <span className="truncate text-label-caps">
+                      {category.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+/**
+ * Unit picker as a bottom drawer: same list pattern as brands (no icons,
+ * checkmark on the selected unit), canonical units ordered first.
+ */
+function UnitDrawer({
+  open,
+  onOpenChange,
+  units,
+  value,
+  onChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  units: Unit[];
+  value: string;
+  onChange: (unitId: string) => void;
+}) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="bottom"
+        className="mx-auto max-h-[70dvh] rounded-t-2xl sm:max-w-md"
+      >
+        <SheetHeader className="border-b border-outline-variant">
+          <SheetTitle className="text-center font-title-md text-on-surface">
+            Unidad
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            Elegí la unidad de la porción.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-1 pt-2">
+            {units.map((unit) => (
+              <OptionRow
+                key={unit.id}
+                selected={value === unit.id}
+                label={unitLabel(unit.name)}
+                onSelect={() => {
+                  onChange(unit.id);
+                  onOpenChange(false);
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 interface ProductFormProps {
   /** When set, the form pre-fills the values (edit mode). */
   initial?: ProductDetail | null;
@@ -278,12 +387,14 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
   const [brandValue, setBrandValue] = useState(initial?.brand_id ?? "");
   const [brandSheetOpen, setBrandSheetOpen] = useState(false);
   const [categoryId, setCategoryId] = useState(initial?.category_id ?? "");
+  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const [servingAmount, setServingAmount] = useState(
     String(initial?.serving_amount ?? "1")
   );
   const [servingUnitId, setServingUnitId] = useState(
     initial?.serving_unit_id ?? ""
   );
+  const [unitSheetOpen, setUnitSheetOpen] = useState(false);
   const [servingWeight, setServingWeight] = useState(
     initial?.serving_weight_grams ? String(initial.serving_weight_grams) : ""
   );
@@ -433,25 +544,27 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
               type="button"
               onClick={() => setBrandSheetOpen(true)}
               aria-label="Elegir marca"
-              className="flex h-12 w-full items-center justify-between rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-body-lg text-on-surface outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className={pickerTriggerCls}
             >
               <span>{selectedBrandName ?? "Sin marca"}</span>
               <ChevronDown className="size-5 text-outline" aria-hidden />
             </button>
           </Field>
 
-          <SelectField
-            label="Categoría"
-            value={categoryId}
-            onChange={setCategoryId}
-          >
-            <option value="">Sin categoría</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </SelectField>
+          <Field label="Categoría">
+            <button
+              type="button"
+              onClick={() => setCategorySheetOpen(true)}
+              aria-label="Elegir categoría"
+              className={pickerTriggerCls}
+            >
+              <span>
+                {categories.find((category) => category.id === categoryId)?.name ??
+                  "Sin categoría"}
+              </span>
+              <ChevronDown className="size-5 text-outline" aria-hidden />
+            </button>
+          </Field>
         </div>
       </section>
 
@@ -476,18 +589,19 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
             />
           </Field>
 
-          <SelectField
-            label="Unidad"
-            value={servingUnitId}
-            onChange={setServingUnitId}
-          >
-            <option value="">—</option>
-            {orderedUnits.map((unit) => (
-              <option key={unit.id} value={unit.id}>
-                {unitLabel(unit.name)}
-              </option>
-            ))}
-          </SelectField>
+          <Field label="Unidad">
+            <button
+              type="button"
+              onClick={() => setUnitSheetOpen(true)}
+              aria-label="Elegir unidad"
+              className={pickerTriggerCls}
+            >
+              <span>
+                {selectedUnit ? unitLabel(selectedUnit.name) : "—"}
+              </span>
+              <ChevronDown className="size-5 text-outline" aria-hidden />
+            </button>
+          </Field>
 
           {showWeight && (
             <Field label="Peso equivalente (g)">
@@ -559,23 +673,39 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
         <p className="px-1 text-body-sm-dense text-destructive">{error}</p>
       )}
 
-      {/* Brand drawer (SDD 09): select nativo reemplazado */}
+      {/* Drawer pickers (SDD 09): native selects reemplazados por bottom sheets */}
       {userId && (
-        <BrandDrawer
-          open={brandSheetOpen}
-          onOpenChange={setBrandSheetOpen}
-          userId={userId}
-          brands={brands}
-          value={brandValue}
-          onChange={setBrandValue}
-          onBrandCreated={(brand) =>
-            setBrands((current) =>
-              current.some((existing) => existing.id === brand.id)
-                ? current
-                : [...current, brand]
-            )
-          }
-        />
+        <>
+          <BrandDrawer
+            open={brandSheetOpen}
+            onOpenChange={setBrandSheetOpen}
+            userId={userId}
+            brands={brands}
+            value={brandValue}
+            onChange={setBrandValue}
+            onBrandCreated={(brand) =>
+              setBrands((current) =>
+                current.some((existing) => existing.id === brand.id)
+                  ? current
+                  : [...current, brand]
+              )
+            }
+          />
+          <CategoryDrawer
+            open={categorySheetOpen}
+            onOpenChange={setCategorySheetOpen}
+            categories={categories}
+            value={categoryId}
+            onChange={setCategoryId}
+          />
+          <UnitDrawer
+            open={unitSheetOpen}
+            onOpenChange={setUnitSheetOpen}
+            units={orderedUnits}
+            value={servingUnitId}
+            onChange={setServingUnitId}
+          />
+        </>
       )}
 
       {/* Fixed save footer (the bottom nav is hidden on these screens) */}

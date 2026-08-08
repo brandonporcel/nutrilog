@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DAILY_PROTEIN_GOAL_GRAMS } from "@/lib/daily-goal";
+import { formatNumber } from "@/lib/format";
 import { MealIcon } from "@/lib/icons/meal-icon";
 import {
   dailyLogRepository,
@@ -70,7 +71,7 @@ export default function DashboardPage() {
             </p>
             <div className="flex items-baseline gap-1">
               <span className="text-display-protein font-bold text-primary">
-                {consumed}
+                {formatNumber(consumed)}
               </span>
               <span className="text-title-md text-on-surface-variant">
                 / {goal}g
@@ -95,7 +96,7 @@ export default function DashboardPage() {
               Media semanal
             </span>
             <span className="text-headline-lg-mobile text-on-surface">
-              {weekly.average} g
+              {formatNumber(weekly.average)} g
             </span>
             {weekly.delta !== null && (
               <span
@@ -122,7 +123,7 @@ export default function DashboardPage() {
             Meta restante
           </span>
           <span className="text-headline-lg-mobile text-on-surface">
-            {remaining} g
+            {formatNumber(remaining)} g
           </span>
           <div className="h-1 w-full overflow-hidden rounded-full bg-primary/10">
             <div
@@ -159,7 +160,7 @@ export default function DashboardPage() {
           <div className="mb-1 flex items-baseline justify-between border-b border-outline-variant py-2">
             <h2 className="text-title-md font-bold text-on-surface">Hoy</h2>
             <span className="text-label-caps text-on-surface-variant">
-              TOTAL: {consumed} g
+              TOTAL: {formatNumber(consumed)} g
             </span>
           </div>
 
@@ -182,7 +183,7 @@ export default function DashboardPage() {
               );
               const protein = (
                 <span className="ml-3 flex flex-shrink-0 items-center gap-1 text-numeric-data text-primary">
-                  {meal.protein_total} g
+                  {formatNumber(meal.protein_total)} g
                   {meal.meal_id && (
                     <ChevronRight
                       className="size-4 text-on-surface-variant"

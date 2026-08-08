@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { type Category } from "@/lib/db/database";
+import { formatNumber } from "@/lib/format";
 import { categoriesRepository } from "@/lib/repositories/categories";
 import {
   productsRepository,
@@ -219,7 +220,7 @@ export default function ProductsPage() {
                 </div>
                 <div className="ml-4 flex-shrink-0 text-right">
                   <span className="text-numeric-data text-primary">
-                    {product.protein} g
+                    {formatNumber(product.protein)} g
                   </span>
                   <p className="text-[10px] font-bold uppercase tracking-tight text-on-surface-variant">
                     {servingCaption(product)}

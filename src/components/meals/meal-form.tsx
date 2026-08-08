@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { DAILY_PROTEIN_GOAL_GRAMS } from "@/lib/daily-goal";
 import { type Template } from "@/lib/db/database";
+import { formatNumber } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons/category-icon";
 import { type MealItemInput } from "@/lib/repositories/daily-log";
 import {
@@ -170,7 +171,7 @@ export function MealForm({
           </div>
           <div className="border-x border-outline-variant/60">
             <p className="text-numeric-data text-secondary">
-              {consumedToday} g
+              {formatNumber(consumedToday)} g
             </p>
             <p className="text-body-sm-dense text-on-surface-variant">
               Consumido hoy
@@ -178,7 +179,7 @@ export function MealForm({
           </div>
           <div>
             <p className="text-numeric-data text-primary">
-              +{draft.totals.protein} g
+              +{formatNumber(draft.totals.protein)} g
             </p>
             <p className="text-body-sm-dense text-on-surface-variant">
               Esta comida
@@ -186,7 +187,8 @@ export function MealForm({
           </div>
         </div>
         <p className="mt-3 text-body-sm-dense text-on-surface-variant">
-          Te faltan <span className="text-primary">{remaining} g</span> para
+          Te faltan{" "}
+          <span className="text-primary">{formatNumber(remaining)} g</span> para
           llegar a la meta de hoy.
         </p>
       </section>
@@ -232,8 +234,11 @@ export function MealForm({
                       {item.product_name}
                     </p>
                     <p className="truncate text-body-sm-dense text-on-surface-variant">
-                      {item.quantity} {pluralUnit(item.quantity, item.unit_label)} ·{" "}
-                      <span className="text-primary">{item.protein} g prot</span>
+                      {formatNumber(item.quantity, 2)}{" "}
+                      {pluralUnit(item.quantity, item.unit_label)} ·{" "}
+                      <span className="text-primary">
+                        {formatNumber(item.protein)} g prot
+                      </span>
                     </p>
                   </div>
                 </button>
@@ -264,13 +269,13 @@ export function MealForm({
               Proteína total
             </span>
             <span className="text-numeric-data text-primary">
-              {draft.totals.protein} g
+              {formatNumber(draft.totals.protein)} g
             </span>
             <span className="text-body-sm-dense text-on-surface-variant">
               Calorías
             </span>
             <span className="text-numeric-data text-on-surface">
-              {draft.totals.calories} kcal
+              {formatNumber(draft.totals.calories, 0)} kcal
             </span>
           </div>
           <Button

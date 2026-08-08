@@ -20,6 +20,7 @@ import {
   type ProductDetail,
 } from "@/lib/repositories/products";
 import { CategoryIcon } from "@/lib/icons/category-icon";
+import { formatNumber } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/ui/toast-store";
 
@@ -165,7 +166,7 @@ export default function ProductDetailPage() {
             </span>
             <div className="flex items-baseline gap-1">
               <span className="text-display-protein font-bold">
-                {product.protein}
+                {formatNumber(product.protein)}
               </span>
               <span className="text-title-md">g</span>
             </div>
@@ -174,10 +175,13 @@ export default function ProductDetailPage() {
             </p>
           </div>
 
-          <MacroCard label="Calorías" value={`${product.calories} kcal`} />
-          <MacroCard label="Carbos" value={`${product.carbs} g`} />
-          <MacroCard label="Grasas" value={`${product.fat} g`} />
-          <MacroCard label="Fibras" value={`${product.fiber} g`} />
+          <MacroCard
+            label="Calorías"
+            value={`${formatNumber(product.calories, 0)} kcal`}
+          />
+          <MacroCard label="Carbos" value={`${formatNumber(product.carbs)} g`} />
+          <MacroCard label="Grasas" value={`${formatNumber(product.fat)} g`} />
+          <MacroCard label="Fibras" value={`${formatNumber(product.fiber)} g`} />
         </div>
       </section>
 

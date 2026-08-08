@@ -1,4 +1,5 @@
 import { db, type Template, type TemplateItem } from "@/lib/db/database";
+import { servingsFor } from "@/lib/portion";
 import { scheduleSync } from "@/lib/sync/sync";
 
 /**
@@ -8,7 +9,7 @@ import { scheduleSync } from "@/lib/sync/sync";
  * on every update (no diffs) — simple and consistent with last-write-wins.
  */
 
-/** Draft item: a product and how many servings the template uses. */
+/** Draft item: a product and a quantity in the product's OWN unit (g, rebanadas…). */
 export interface TemplateItemInput {
   product_id: string;
   quantity: number;
@@ -109,11 +110,17 @@ export const templatesRepository = {
     return templates.map((template) => {
       const templateItems = byTemplate.get(template.id) ?? [];
       const protein = templateItems.reduce(
-        (sum, item) => sum + item.quantity * (productById.get(item.product_id)?.protein ?? 0),
+        (sum, item) =>
+          sum +
+          servingsFor(item.quantity, productById.get(item.product_id)) *
+            (productById.get(item.product_id)?.protein ?? 0),
         0
       );
       const calories = templateItems.reduce(
-        (sum, item) => sum + item.quantity * (productById.get(item.product_id)?.calories ?? 0),
+        (sum, item) =>
+          sum +
+          servingsFor(item.quantity, productById.get(item.product_id)) *
+            (productById.get(item.product_id)?.calories ?? 0),
         0
       );
       const preview = templateItems
@@ -169,8 +176,9 @@ export const templatesRepository = {
     let caloriesTotal = 0;
     const detailItems: TemplateItemDetail[] = items.map((item) => {
       const product = productById.get(item.product_id);
-      const protein = item.quantity * (product?.protein ?? 0);
-      const calories = item.quantity * (product?.calories ?? 0);
+      const servings = servingsFor(item.quantity, product);
+      const protein = servings * (product?.protein ?? 0);
+      const calories = servings * (product?.calories ?? 0);
       proteinTotal += protein;
       caloriesTotal += calories;
       return {
