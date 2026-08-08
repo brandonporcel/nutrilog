@@ -19,12 +19,19 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { CategoryIcon } from "@/lib/icons/category-icon";
+import { formatNumber } from "@/lib/format";
+import {
+  isWeightUnit,
+  servingsFor,
+  weightGramsFor,
+} from "@/lib/portion";
 import { dailyLogRepository } from "@/lib/repositories/daily-log";
 import {
   productsRepository,
   type ProductListItem,
 } from "@/lib/repositories/products";
-import { type TemplateSummary } from "@/lib/repositories/templates";
+import { type TemplateSummary, unitLabel } from "@/lib/repositories/templates";
+import { pluralUnit } from "@/lib/use-draft-items";
 import { createClient } from "@/lib/supabase/client";
 
 /** Accepts both "." and "," decimal separators; clamps to a positive value. */
@@ -33,12 +40,19 @@ function toQuantity(value: string): number {
   return Number.isFinite(n) && n > 0 ? n : 1;
 }
 
-function servingCaption(item: ProductListItem): string {
-  const parts = [item.serving_amount, item.serving_unit_name].filter(Boolean);
-  const text = `por ${parts.join(" ")}`;
-  return item.serving_weight_grams
-    ? `${text} (${item.serving_weight_grams} g)`
-    : text;
+/**
+ * "por 1 unidad (60 g)" / "por 2 rebanadas (50 g)" / "por 250 g".
+ * Quantity-aware: weight and plurals follow the value the user picked.
+ */
+function servingCaption(item: ProductListItem, quantity: number): string {
+  const unit = unitLabel(item.serving_unit_name);
+  const amount = formatNumber(quantity, 2);
+  if (isWeightUnit(item.serving_unit_name)) {
+    return `por ${amount} ${unit}`;
+  }
+  const weight = weightGramsFor(quantity, item);
+  const text = `por ${amount} ${pluralUnit(quantity, unit)}`;
+  return weight !== null ? `${text} (${formatNumber(weight)} g)` : text;
 }
 
 /** Adds one serving to the draft on confirm (quantity step → pick step). */
@@ -183,8 +197,12 @@ export function AddItemSheet({
   }, [templates, query]);
 
   const qty = toQuantity(quantity);
-  const protein = selected ? Math.round(qty * selected.protein * 10) / 10 : 0;
-  const calories = selected ? Math.round(qty * selected.calories) : 0;
+  const protein = selected
+    ? Math.round(servingsFor(qty, selected) * selected.protein * 10) / 10
+    : 0;
+  const calories = selected
+    ? Math.round(servingsFor(qty, selected) * selected.calories)
+    : 0;
 
   function pickProduct(product: ProductListItem) {
     setSelected(product);
@@ -321,7 +339,7 @@ export function AddItemSheet({
                         <p className="truncate text-body-sm-dense text-on-surface-variant">
                           {product.brand_name ?? "Sin marca"} ·{" "}
                           <span className="text-primary">
-                            {product.protein} g prot
+                            {formatNumber(product.protein)} g prot
                           </span>
                         </p>
                       </div>
@@ -363,7 +381,7 @@ export function AddItemSheet({
                         <p className="truncate text-body-sm-dense text-on-surface-variant">
                           {product.brand_name ?? "Sin marca"} ·{" "}
                           <span className="text-primary">
-                            {product.protein} g prot
+                            {formatNumber(product.protein)} g prot
                           </span>
                         </p>
                       </div>
@@ -405,7 +423,7 @@ export function AddItemSheet({
                         </p>
                       </div>
                       <span className="ml-4 flex-shrink-0 text-numeric-data text-primary">
-                        ≈ {template.protein_total} g
+                        ≈ {formatNumber(template.protein_total)} g
                       </span>
                     </button>
                   ))
@@ -422,14 +440,14 @@ export function AddItemSheet({
                   Resultado estimado
                 </p>
                 <p className="text-display-protein font-bold text-primary">
-                  {protein} g
+                  {formatNumber(protein)} g
                 </p>
                 <p className="text-title-md text-primary/80">Proteína</p>
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface-container px-4 py-1 text-numeric-data text-secondary">
-                  {calories} kcal
+                  {formatNumber(calories, 0)} kcal
                 </div>
                 <p className="mt-2 text-body-sm-dense text-on-surface-variant">
-                  {servingCaption(selected)}
+                  {servingCaption(selected, qty)}
                 </p>
               </div>
 
@@ -452,7 +470,7 @@ export function AddItemSheet({
                   value={quantity}
                   onChange={(event) => setQuantity(event.target.value)}
                   inputMode="decimal"
-                  aria-label="Cantidad de porciones"
+                  aria-label="Cantidad"
                   className="w-20 bg-transparent text-center text-display-protein font-bold text-on-surface outline-none"
                 />
                 <button

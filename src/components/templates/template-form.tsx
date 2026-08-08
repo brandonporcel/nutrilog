@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import { AddItemSheet } from "@/components/templates/add-item-sheet";
 import { SwipeableRow } from "@/components/products/swipeable-row";
 import { Button } from "@/components/ui/button";
+import { formatNumber } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons/category-icon";
 import { type TemplateDetail, type TemplateInput } from "@/lib/repositories/templates";
 import {
@@ -103,7 +104,7 @@ export function TemplateForm({ initial, submitLabel, onSubmit }: TemplateFormPro
             Proteína total
           </p>
           <p className="text-display-protein font-bold text-primary">
-            {draft.totals.protein}
+            {formatNumber(draft.totals.protein)}
             <span className="ml-1 text-title-md font-normal">g</span>
           </p>
         </div>
@@ -112,7 +113,7 @@ export function TemplateForm({ initial, submitLabel, onSubmit }: TemplateFormPro
             Calorías
           </p>
           <p className="text-numeric-data text-on-surface">
-            {draft.totals.calories} kcal
+            {formatNumber(draft.totals.calories, 0)} kcal
           </p>
         </div>
       </section>
@@ -157,8 +158,11 @@ export function TemplateForm({ initial, submitLabel, onSubmit }: TemplateFormPro
                       {item.product_name}
                     </p>
                     <p className="truncate text-body-sm-dense text-on-surface-variant">
-                      {item.quantity} {pluralUnit(item.quantity, item.unit_label)} ·{" "}
-                      <span className="text-primary">{item.protein} g prot</span>
+                      {formatNumber(item.quantity, 2)}{" "}
+                      {pluralUnit(item.quantity, item.unit_label)} ·{" "}
+                      <span className="text-primary">
+                        {formatNumber(item.protein)} g prot
+                      </span>
                     </p>
                   </div>
                 </button>
