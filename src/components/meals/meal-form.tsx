@@ -73,7 +73,17 @@ export function MealForm({
   const [templateName, setTemplateName] = useState("");
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [localTemplates, setLocalTemplates] = useState<TemplateSummary[]>(templates);
+  const [prevTemplates, setPrevTemplates] = useState(templates);
   const draft = useDraftItems();
+
+  // The parent loads templates asynchronously: re-sync the local list when
+  // the prop arrives/updates (a stale useState(initial) would freeze the
+  // Plantillas tab empty forever). Adjusting state during render is the
+  // React-recommended pattern for "state derived from a prop".
+  if (prevTemplates !== templates) {
+    setPrevTemplates(templates);
+    setLocalTemplates(templates);
+  }
 
   const remaining = Math.max(0, DAILY_PROTEIN_GOAL_GRAMS - consumedToday);
 

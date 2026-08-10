@@ -18,7 +18,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Protected routes require a session.
-  const protectedPaths = ["/dashboard", "/units", "/history", "/templates"];
+  const protectedPaths = ["/dashboard", "/units", "/templates"];
   const isProtected =
     protectedPaths.includes(pathname) ||
     pathname === "/products" ||

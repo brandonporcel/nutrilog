@@ -9,8 +9,7 @@ import { AppHeader } from "@/components/shell/header";
 /** Screen titles, contextual FABs and back links keyed by route. */
 const SCREENS: Record<string, { title: string; fab?: string; back?: string }> = {
   "/dashboard": { title: "Inicio", fab: "/meals/new" },
-  "/history": { title: "Histórico" },
-  "/templates": { title: "Modelos", fab: "/templates/new" },
+  "/templates": { title: "Plantillas", fab: "/templates/new" },
   "/templates/new": { title: "Nueva plantilla", back: "/templates" },
   "/products": { title: "Productos", fab: "/products/new" },
   "/products/new": { title: "Nuevo producto", back: "/products" },

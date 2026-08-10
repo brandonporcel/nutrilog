@@ -40,7 +40,7 @@ export default function DashboardPage() {
     if (!userId) return;
     const [todayData, weeklyData] = await Promise.all([
       dailyLogRepository.getToday(userId),
-      dailyLogRepository.getWeeklyAverage(userId, 7),
+      dailyLogRepository.getWeeklyAverage(userId, 30),
     ]);
     setToday(todayData);
     setWeekly(weeklyData);
@@ -93,7 +93,7 @@ export default function DashboardPage() {
         {weekly && (
           <div className="flex flex-col gap-2 rounded-xl bg-surface-container-high p-4">
             <span className="text-label-caps uppercase text-primary">
-              Media semanal
+              Promedio 30 días
             </span>
             <span className="text-headline-lg-mobile text-on-surface">
               {formatNumber(weekly.average)} g

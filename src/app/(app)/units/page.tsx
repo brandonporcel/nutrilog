@@ -57,7 +57,7 @@ export default function UnitsPage() {
       <header className="flex flex-col gap-1">
         <h1 className="text-headline-lg-mobile text-on-surface">Unidades</h1>
         <p className="text-body-sm-dense text-on-surface-variant">
-          Temporal (SDD 03): gestión mínima de unidades hasta que Modelos la
+          Temporal (SDD 03): gestión mínima de unidades hasta que Plantillas la
           reemplace.
         </p>
       </header>

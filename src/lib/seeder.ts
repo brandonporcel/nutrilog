@@ -48,32 +48,6 @@ const SEED_PRODUCTS: SeedProduct[] = [
     calories: 72,
   },
   {
-    name: "Banana",
-    brand: null,
-    category: "Frutas",
-    serving_amount: 1,
-    serving_unit: "Unit",
-    serving_weight_grams: 120,
-    protein: 1.3,
-    carbs: 27,
-    fat: 0.4,
-    fiber: 2.6,
-    calories: 105,
-  },
-  {
-    name: "Manzana",
-    brand: null,
-    category: "Frutas",
-    serving_amount: 1,
-    serving_unit: "Unit",
-    serving_weight_grams: 180,
-    protein: 0.5,
-    carbs: 25,
-    fat: 0.2,
-    fiber: 4.4,
-    calories: 95,
-  },
-  {
     name: "Arroz blanco cocido",
     brand: null,
     category: "Cereales",
@@ -234,9 +208,9 @@ export async function ensureUserCatalog(userId: string): Promise<void> {
 }
 
 /**
- * One starter template ("Desayuno": 3 huevos + 1 manzana) so a new user
- * sees a template from day one. Only when the user has NO templates, and
- * only referencing products that exist (the user may have deleted a seed).
+ * One starter template ("Desayuno": 3 huevos) so a new user sees a template
+ * from day one. Only when the user has NO templates, and only referencing
+ * products that exist (the user may have deleted a seed).
  */
 async function seedStarterTemplate(userId: string): Promise<void> {
   const templateCount = await db.templates
@@ -256,7 +230,6 @@ async function seedStarterTemplate(userId: string): Promise<void> {
 
   const items = [
     { name: "Huevo entero", quantity: 3 },
-    { name: "Manzana", quantity: 1 },
   ]
     .map(({ name, quantity }) => {
       const product = productByName.get(name);
