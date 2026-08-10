@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { History, Home, Package, ReceiptText } from "lucide-react";
+import { Home, Package, ReceiptText } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/dashboard", label: "Inicio", icon: Home },
-  { href: "/history", label: "Histórico", icon: History },
-  { href: "/templates", label: "Modelos", icon: ReceiptText },
+  { href: "/templates", label: "Plantillas", icon: ReceiptText },
   { href: "/products", label: "Productos", icon: Package },
 ] as const;
 
