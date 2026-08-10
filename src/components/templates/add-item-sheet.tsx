@@ -20,11 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { CategoryIcon } from "@/lib/icons/category-icon";
 import { formatNumber } from "@/lib/format";
-import {
-  isWeightUnit,
-  servingsFor,
-  weightGramsFor,
-} from "@/lib/portion";
+import { isWeightUnit, servingsFor, weightGramsFor } from "@/lib/portion";
 import { dailyLogRepository } from "@/lib/repositories/daily-log";
 import {
   productsRepository,
@@ -94,14 +90,14 @@ export function AddItemSheet({
     () =>
       typeof window !== "undefined" &&
       !(window.matchMedia?.("(pointer: coarse)").matches ?? false),
-    []
+    [],
   );
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [frequentIds, setFrequentIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"frequent" | "products" | "templates">(
-    "frequent"
+    "frequent",
   );
   const [step, setStep] = useState<"pick" | "amount">("pick");
   const [selected, setSelected] = useState<ProductListItem | null>(null);
@@ -151,14 +147,15 @@ export function AddItemSheet({
     };
   }, [open, editing]);
 
-  const hasTemplatesTab = templates !== undefined && onTemplatePick !== undefined;
+  const hasTemplatesTab =
+    templates !== undefined && onTemplatePick !== undefined;
 
   const frequentProducts = useMemo(
     () =>
       frequentIds
         .map((id) => products.find((product) => product.id === id))
         .filter((product): product is ProductListItem => product !== undefined),
-    [frequentIds, products]
+    [frequentIds, products],
   );
 
   function pickTemplate(template: TemplateSummary) {
@@ -170,7 +167,9 @@ export function AddItemSheet({
     const term = query.trim().toLowerCase();
     if (!term) return products;
     return products.filter((product) =>
-      `${product.name} ${product.brand_name ?? ""}`.toLowerCase().includes(term)
+      `${product.name} ${product.brand_name ?? ""}`
+        .toLowerCase()
+        .includes(term),
     );
   }, [products, query]);
 
@@ -183,7 +182,7 @@ export function AddItemSheet({
     const term = query.trim().toLowerCase();
     if (!term) return frequentProducts;
     const matches = frequentProducts.filter((product) =>
-      product.name.toLowerCase().includes(term)
+      product.name.toLowerCase().includes(term),
     );
     return matches.length > 0 ? matches : filtered;
   }, [frequentProducts, filtered, query]);
@@ -192,7 +191,7 @@ export function AddItemSheet({
     const term = query.trim().toLowerCase();
     if (!term) return templates;
     return templates?.filter((template) =>
-      template.name.toLowerCase().includes(term)
+      template.name.toLowerCase().includes(term),
     );
   }, [templates, query]);
 
@@ -206,7 +205,9 @@ export function AddItemSheet({
 
   function pickProduct(product: ProductListItem) {
     setSelected(product);
-    setQuantity(editing?.product_id === product.id ? String(editing.quantity) : "1");
+    setQuantity(
+      editing?.product_id === product.id ? String(editing.quantity) : "1",
+    );
     setStep("amount");
   }
 
@@ -292,7 +293,10 @@ export function AddItemSheet({
             {/* Search is shared by every tab and always visible. */}
             <div className="relative px-4 pb-1 pt-3">
               <div className="pointer-events-none absolute inset-y-0 left-0 ml-7 flex items-center">
-                <PackageSearch className="size-5 text-on-surface-variant" aria-hidden />
+                <PackageSearch
+                  className="size-5 text-on-surface-variant"
+                  aria-hidden
+                />
               </div>
               <input
                 value={query}
@@ -399,7 +403,7 @@ export function AddItemSheet({
                   <p className="px-4 py-6 text-body-sm-dense text-on-surface-variant">
                     {query.trim()
                       ? `Sin resultados para “${query.trim()}”.`
-                      : "Todavía no tenés plantillas. Podés crearlas desde la pestaña Modelos."}
+                      : "Todavía no tenés plantillas. Podés crearlas desde la pestaña Plantillas."}
                   </p>
                 ) : (
                   filteredTemplates?.map((template) => (
@@ -471,11 +475,15 @@ export function AddItemSheet({
                   onChange={(event) => setQuantity(event.target.value)}
                   inputMode="decimal"
                   aria-label="Cantidad"
-                  className="w-20 bg-transparent text-center text-display-protein font-bold text-on-surface outline-none"
+                  // field-sizing: the field grows with the digits instead of
+                  // clipping long values (fallback: fixed min-width).
+                  className="min-w-20 max-w-full bg-transparent text-center text-display-protein font-bold text-on-surface outline-none [field-sizing:content]"
                 />
                 <button
                   type="button"
-                  onClick={() => setQuantity((current) => String(toQuantity(current) + 1))}
+                  onClick={() =>
+                    setQuantity((current) => String(toQuantity(current) + 1))
+                  }
                   aria-label="Aumentar cantidad"
                   className="flex size-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-md transition-transform active:scale-90"
                 >

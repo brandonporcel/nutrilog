@@ -315,7 +315,7 @@ Products
 
 # Seeds iniciales
 
-Los seeds se insertan POR USUARIO desde la aplicación (no en la migración SQL): la primera vez que se abre la app, `ensureUserCatalog` (`src/lib/seeder.ts`) crea categorías y unidades si faltan y luego los productos (marcas incluidas, vía `getOrCreateByName`); el sync los sube a Supabase. Los productos se matchean por nombre contra todas las filas (soft-deletes incluidos): un producto que el usuario borró no vuelve a aparecer. Además, si el usuario todavía no tiene plantillas, se siembra una de arranque — **Desayuno** (3 huevos + 1 manzana) — solo con productos existentes (lo borrado se omite).
+Los seeds se insertan POR USUARIO desde la aplicación (no en la migración SQL): la primera vez que se abre la app, `ensureUserCatalog` (`src/lib/seeder.ts`) crea categorías y unidades si faltan y luego los productos (marcas incluidas, vía `getOrCreateByName`); el sync los sube a Supabase. Los productos se matchean por nombre contra todas las filas (soft-deletes incluidos): un producto que el usuario borró no vuelve a aparecer. Además, si el usuario todavía no tiene plantillas, se siembra una de arranque — **Desayuno** (3 huevos) — solo con productos existentes (lo borrado se omite).
 
 ## Categories
 

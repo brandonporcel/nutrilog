@@ -70,7 +70,7 @@ El usuario puede registrar cualquier alimento personalizado.
 
 Estado
 
-🚧 En progreso (Home con meta de proteína y listado de comidas del día + flujo "Nueva comida" con agregar por producto o plantilla, SDD 08 ✅; detalle de comida con edición de fecha y hora ✅; pendiente: histórico, editar/eliminar items de una comida guardada)
+🚧 En progreso (Home con meta de proteína y listado de comidas del día + flujo "Nueva comida" con agregar por producto o plantilla, SDD 08 ✅; detalle de comida con edición de fecha y hora ✅; pendiente: editar/eliminar items de una comida guardada)
 
 Objetivos
 
@@ -79,7 +79,6 @@ Objetivos
 - Editar alimento ✅ (en el carrito de "Nueva comida")
 - Eliminar alimento ✅ (en el carrito de "Nueva comida")
 - Mover una comida a otra fecha/hora ✅ (desde el detalle de la comida)
-- Historial por día
 
 Resultado esperado
 
@@ -153,7 +152,7 @@ Estado
 
 Objetivos
 
-- Promedio semanal
+- Promedio 30 días ✅ (en Home, ventana móvil con delta vs el período previo)
 - Promedio mensual
 - Días con meta cumplida
 - Evolución de proteínas
